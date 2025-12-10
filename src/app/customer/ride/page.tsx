@@ -19,7 +19,7 @@ import {
 import { useAuth } from '@/lib/auth-context';
 import { Card, Button, Badge } from '@/components/ui';
 import { RideMap, PlacesAutocomplete } from '@/components/maps/GoogleMap';
-import { ref, push, set, get } from 'firebase/database';
+import { ref, push, set, get, onValue } from 'firebase/database';
 import { database } from '@/lib/firebase';
 import toast from 'react-hot-toast';
 import { PricingSettings } from '@/types';
@@ -58,6 +58,7 @@ export default function RideBookingPage() {
     const [duration, setDuration] = useState<number | null>(null);
     const [panelExpanded, setPanelExpanded] = useState(false);
     const [pricing, setPricing] = useState<PricingSettings>(DEFAULT_PRICING);
+    const [nearbyDrivers, setNearbyDrivers] = useState<{ id: string; lat: number; lng: number; heading?: number }[]>([]);
 
     // Fetch pricing from Firebase
     useEffect(() => {
@@ -73,6 +74,57 @@ export default function RideBookingPage() {
             }
         };
         fetchPricing();
+    }, []);
+
+    // Listen to online drivers in real-time
+    useEffect(() => {
+        const driversRef = ref(database, 'drivers');
+        const locationsRef = ref(database, 'driverLocations');
+
+        // Combined listener for drivers and locations
+        const unsubLocations = onValue(locationsRef, async (locSnapshot) => {
+            if (!locSnapshot.exists()) {
+                setNearbyDrivers([]);
+                return;
+            }
+
+            const locations = locSnapshot.val();
+            const driversSnapshot = await get(driversRef);
+
+            if (!driversSnapshot.exists()) {
+                setNearbyDrivers([]);
+                return;
+            }
+
+            const drivers = driversSnapshot.val();
+            const onlineDrivers: { id: string; lat: number; lng: number; heading?: number }[] = [];
+
+            // Only show drivers who are online and approved
+            for (const driverId of Object.keys(locations)) {
+                const driver = drivers[driverId];
+                const location = locations[driverId];
+
+                if (
+                    driver &&
+                    driver.status === 'APPROVED' &&
+                    driver.isOnline &&
+                    location?.lat &&
+                    location?.lng &&
+                    location.updatedAt > Date.now() - 5 * 60 * 1000 // Within last 5 minutes
+                ) {
+                    onlineDrivers.push({
+                        id: driverId,
+                        lat: location.lat,
+                        lng: location.lng,
+                        heading: location.heading || 0,
+                    });
+                }
+            }
+
+            setNearbyDrivers(onlineDrivers);
+        });
+
+        return () => unsubLocations();
     }, []);
 
     // Calculate fare when both locations are set
@@ -148,7 +200,47 @@ export default function RideBookingPage() {
             };
 
             await set(rideRef, rideData);
-            toast.success('Ride requested! Finding a driver...');
+
+            // Find and notify nearby drivers
+            try {
+                const matchResponse = await fetch('/api/ride-matching', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        pickupLat: pickup.lat,
+                        pickupLng: pickup.lng,
+                        rideId: rideRef.key,
+                        maxRadius: 15,
+                        limit: 10,
+                    }),
+                });
+                const matchData = await matchResponse.json();
+
+                // Create ride requests for matched drivers
+                if (matchData.drivers?.length > 0) {
+                    const expiresAt = Date.now() + 60000; // 60 seconds to respond
+                    for (const driver of matchData.drivers) {
+                        await set(ref(database, `rideRequests/${driver.id}/${rideRef.key}`), {
+                            rideId: rideRef.key,
+                            pickup: rideData.pickup,
+                            destination: rideData.destination,
+                            fare,
+                            distance,
+                            riderName: userData.name,
+                            riderPhone: userData.phone || '',
+                            expiresAt,
+                            createdAt: Date.now(),
+                        });
+                    }
+                    toast.success(`Ride requested! Notified ${matchData.drivers.length} driver(s)...`);
+                } else {
+                    toast.success('Ride requested! Finding a driver...');
+                }
+            } catch (matchErr) {
+                console.error('Error notifying drivers:', matchErr);
+                toast.success('Ride requested! Finding a driver...');
+            }
+
             router.push(`/customer/ride/${rideRef.key}`);
         } catch (error) {
             console.error('Error booking ride:', error);
@@ -208,6 +300,7 @@ export default function RideBookingPage() {
                 onDestinationSelect={handleDestinationSelect}
                 selectMode={selectMode}
                 showRoute={!!(pickup && destination)}
+                nearbyDrivers={nearbyDrivers}
                 className="absolute inset-0 h-full w-full"
             />
 

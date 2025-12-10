@@ -123,10 +123,15 @@ export default function DriverDashboard() {
 
     // Start GPS tracking
     const startLocationTracking = () => {
-        if ('geolocation' in navigator) {
-            navigator.geolocation.watchPosition(
-                async (position) => {
-                    const { latitude, longitude, heading, speed } = position.coords;
+        if (!('geolocation' in navigator)) {
+            toast.error('Geolocation is not supported by your browser');
+            return;
+        }
+
+        navigator.geolocation.watchPosition(
+            async (position) => {
+                const { latitude, longitude, heading, speed } = position.coords;
+                try {
                     await set(ref(database, `driverLocations/${user?.uid}`), {
                         lat: latitude,
                         lng: longitude,
@@ -134,18 +139,38 @@ export default function DriverDashboard() {
                         speed: speed || 0,
                         updatedAt: Date.now(),
                     });
-                },
-                (error) => {
-                    console.error('Location error:', error);
-                    toast.error('Unable to get your location');
-                },
-                {
-                    enableHighAccuracy: true,
-                    maximumAge: 5000,
-                    timeout: 10000,
+                } catch (err) {
+                    console.error('Error saving location:', err);
                 }
-            );
-        }
+            },
+            (error) => {
+                console.error('Location error:', error.code, error.message);
+                switch (error.code) {
+                    case error.PERMISSION_DENIED:
+                        toast.error('Location permission denied. Please enable location access in your browser settings.');
+                        break;
+                    case error.POSITION_UNAVAILABLE:
+                        toast.error('Location unavailable. Please check your GPS settings.');
+                        break;
+                    case error.TIMEOUT:
+                        toast.error('Location request timed out. Retrying...');
+                        // Retry with lower accuracy
+                        navigator.geolocation.getCurrentPosition(
+                            () => { },
+                            () => { },
+                            { enableHighAccuracy: false, timeout: 15000 }
+                        );
+                        break;
+                    default:
+                        toast.error('Unable to get your location');
+                }
+            },
+            {
+                enableHighAccuracy: true,
+                maximumAge: 10000,
+                timeout: 15000,
+            }
+        );
     };
 
     const stopLocationTracking = () => {

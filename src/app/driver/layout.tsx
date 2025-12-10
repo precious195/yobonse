@@ -14,7 +14,8 @@ import {
     DollarSign,
     Menu,
     X,
-    Navigation
+    Navigation,
+    MapPin
 } from 'lucide-react';
 import { useAuth } from '@/lib/auth-context';
 import { Avatar, Spinner, Badge } from '@/components/ui';
@@ -26,6 +27,7 @@ import { Driver } from '@/types';
 
 const navigation = [
     { name: 'Dashboard', href: '/driver/dashboard', icon: Home },
+    { name: 'Available Rides', href: '/driver/available-rides', icon: MapPin },
     { name: 'Active Trip', href: '/driver/trip', icon: Navigation },
     { name: 'Earnings', href: '/driver/earnings', icon: DollarSign },
     { name: 'Documents', href: '/driver/documents', icon: FileText },
