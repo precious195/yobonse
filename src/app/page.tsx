@@ -1,30 +1,29 @@
 import Link from "next/link";
-import { Car, Shield, Clock, CreditCard, MapPin, Star, ArrowRight, Smartphone } from "lucide-react";
+import { Car, Shield, Clock, CreditCard, MapPin, ArrowRight } from "lucide-react";
 
 export default function Home() {
   return (
-    <div className="min-h-screen animated-gradient">
+    <div className="min-h-screen bg-slate-50 flex flex-col">
       {/* Navigation */}
-      <nav className="fixed top-0 w-full z-50 glass">
+      <nav className="fixed top-0 w-full z-50 bg-white/80 backdrop-blur-xl border-b border-slate-200">
         <div className="max-w-7xl mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <div className="w-10 h-10 bg-gradient-to-br from-violet-600 to-indigo-600 rounded-xl flex items-center justify-center">
+              <div className="w-10 h-10 bg-gradient-to-br from-violet-600 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg shadow-violet-500/25">
                 <Car className="w-6 h-6 text-white" />
               </div>
-              <span className="text-xl font-bold gradient-text">RideFlow</span>
+              <span className="text-xl font-bold gradient-text">YABONSE</span>
             </div>
 
             <div className="hidden md:flex items-center gap-8">
-              <a href="#features" className="text-gray-400 hover:text-white transition-colors">Features</a>
-              <a href="#how-it-works" className="text-gray-400 hover:text-white transition-colors">How it Works</a>
-              <a href="#safety" className="text-gray-400 hover:text-white transition-colors">Safety</a>
+              <a href="#features" className="text-slate-600 hover:text-slate-900 transition-colors">Features</a>
+              <a href="#how-it-works" className="text-slate-600 hover:text-slate-900 transition-colors">How it Works</a>
             </div>
 
             <div className="flex items-center gap-4">
               <Link
                 href="/login"
-                className="text-gray-300 hover:text-white transition-colors font-medium"
+                className="text-slate-700 hover:text-slate-900 transition-colors font-medium"
               >
                 Sign In
               </Link>
@@ -39,125 +38,87 @@ export default function Home() {
         </div>
       </nav>
 
-      {/* Hero Section */}
-      <section className="pt-32 pb-20 px-6">
-        <div className="max-w-7xl mx-auto">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
-            <div className="space-y-8">
-              <div className="inline-flex items-center gap-2 px-4 py-2 bg-violet-500/10 border border-violet-500/30 rounded-full">
-                <span className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></span>
-                <span className="text-sm text-violet-300">Available in your city</span>
+      {/* Main Content */}
+      <main className="flex-grow pt-20">
+
+        {/* Hero Section */}
+        <div className="w-full px-6 py-20 lg:py-32 bg-gradient-to-br from-slate-50 via-violet-50 to-indigo-50">
+          <div className="max-w-7xl mx-auto">
+            <div className="grid lg:grid-cols-2 gap-12 items-center">
+              <div className="space-y-8">
+                <div className="inline-flex items-center gap-2 px-4 py-2 bg-violet-100 border border-violet-200 rounded-full">
+                  <span className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></span>
+                  <span className="text-sm text-violet-700 font-medium">Available in your city</span>
+                </div>
+
+                <h1 className="text-5xl lg:text-7xl font-bold leading-tight text-slate-900">
+                  Your Ride, <br />
+                  <span className="gradient-text">Your Way</span>
+                </h1>
+
+                <p className="text-xl text-slate-600 max-w-lg">
+                  Experience premium ride-hailing with real-time tracking, professional drivers, and seamless payments.
+                </p>
+
+                <div className="flex flex-wrap gap-4">
+                  <Link
+                    href="/register"
+                    className="flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-violet-600 to-indigo-600 text-white font-semibold rounded-xl hover:from-violet-700 hover:to-indigo-700 transition-all shadow-lg shadow-violet-500/25"
+                  >
+                    Request a Ride
+                    <ArrowRight className="w-5 h-5" />
+                  </Link>
+                  <Link
+                    href="/driver-register"
+                    className="flex items-center gap-2 px-8 py-4 border-2 border-slate-300 text-slate-700 font-semibold rounded-xl hover:bg-slate-100 transition-all"
+                  >
+                    <Car className="w-5 h-5" />
+                    Become a Driver
+                  </Link>
+                </div>
+
+                {/* Stats */}
+                <div className="flex gap-8 pt-8 border-t border-slate-200">
+                  <div>
+                    <p className="text-3xl font-bold text-slate-900">50K+</p>
+                    <p className="text-slate-500">Active Riders</p>
+                  </div>
+                  <div>
+                    <p className="text-3xl font-bold text-slate-900">10K+</p>
+                    <p className="text-slate-500">Drivers</p>
+                  </div>
+                </div>
               </div>
 
-              <h1 className="text-5xl lg:text-7xl font-bold leading-tight">
-                Your Ride,{" "}
-                <span className="gradient-text">Your Way</span>
-              </h1>
+              {/* Hero Image Block */}
+              <div className="relative hidden lg:block h-[500px] w-full bg-white rounded-3xl overflow-hidden border border-slate-200 shadow-2xl">
+                {/* Map Mockup Background */}
+                <div className="absolute inset-0 bg-gradient-to-br from-violet-100 to-indigo-100 opacity-50"></div>
 
-              <p className="text-xl text-gray-400 max-w-lg">
-                Experience premium ride-hailing with real-time tracking, professional drivers, and seamless payments. Get where you need to go, safely and comfortably.
-              </p>
-
-              <div className="flex flex-wrap gap-4">
-                <Link
-                  href="/register"
-                  className="group inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-violet-600 to-indigo-600 text-white font-semibold rounded-xl hover:from-violet-700 hover:to-indigo-700 transition-all shadow-lg shadow-violet-500/25"
-                >
-                  Request a Ride
-                  <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-                </Link>
-                <Link
-                  href="/driver-register"
-                  className="inline-flex items-center gap-2 px-8 py-4 border-2 border-gray-700 text-gray-200 font-semibold rounded-xl hover:bg-gray-800 transition-all"
-                >
-                  <Car className="w-5 h-5" />
-                  Become a Driver
-                </Link>
-              </div>
-
-              {/* Stats */}
-              <div className="flex gap-8 pt-8 border-t border-gray-800">
-                <div>
-                  <p className="text-3xl font-bold text-white">50K+</p>
-                  <p className="text-gray-500">Active Riders</p>
-                </div>
-                <div>
-                  <p className="text-3xl font-bold text-white">10K+</p>
-                  <p className="text-gray-500">Drivers</p>
-                </div>
-                <div>
-                  <p className="text-3xl font-bold text-white">4.9</p>
-                  <p className="text-gray-500">App Rating</p>
-                </div>
-              </div>
-            </div>
-
-            {/* Hero Image/Illustration */}
-            <div className="relative hidden lg:block">
-              <div className="absolute inset-0 bg-gradient-to-br from-violet-600/20 to-cyan-600/20 rounded-3xl blur-3xl"></div>
-              <div className="relative glass rounded-3xl p-8 glow-violet">
-                <div className="aspect-square bg-gradient-to-br from-gray-900 to-gray-800 rounded-2xl flex items-center justify-center overflow-hidden">
-                  {/* Map Preview Mockup */}
-                  <div className="relative w-full h-full p-6">
-                    <div className="absolute inset-0 opacity-30">
-                      <svg className="w-full h-full" viewBox="0 0 400 400" fill="none">
-                        <path d="M0 200 Q100 100 200 200 T400 200" stroke="#6366f1" strokeWidth="2" fill="none" />
-                        <path d="M0 150 Q100 50 200 150 T400 150" stroke="#8b5cf6" strokeWidth="1" fill="none" strokeDasharray="5 5" />
-                        <path d="M0 250 Q100 150 200 250 T400 250" stroke="#8b5cf6" strokeWidth="1" fill="none" strokeDasharray="5 5" />
-                        <circle cx="80" cy="180" r="30" fill="#8b5cf620" stroke="#8b5cf6" strokeWidth="1" />
-                        <circle cx="320" cy="220" r="30" fill="#10b98120" stroke="#10b981" strokeWidth="1" />
-                      </svg>
-                    </div>
-
-                    {/* Pickup marker */}
-                    <div className="absolute top-1/4 left-1/4 animate-float">
-                      <div className="w-12 h-12 bg-violet-600 rounded-full flex items-center justify-center shadow-lg shadow-violet-600/50">
-                        <MapPin className="w-6 h-6 text-white" />
-                      </div>
-                      <div className="mt-2 px-3 py-1 bg-gray-900/90 rounded-lg text-xs text-white whitespace-nowrap">
-                        Pickup Location
-                      </div>
-                    </div>
-
-                    {/* Destination marker */}
-                    <div className="absolute bottom-1/4 right-1/4 animate-float" style={{ animationDelay: '1s' }}>
-                      <div className="w-12 h-12 bg-emerald-500 rounded-full flex items-center justify-center shadow-lg shadow-emerald-500/50">
-                        <MapPin className="w-6 h-6 text-white" />
-                      </div>
-                      <div className="mt-2 px-3 py-1 bg-gray-900/90 rounded-lg text-xs text-white whitespace-nowrap">
-                        Destination
-                      </div>
-                    </div>
-
-                    {/* Car icon */}
-                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
-                      <div className="driver-marker">
-                        <div className="driver-marker-inner">
-                          <Car className="w-6 h-6" />
-                        </div>
-                      </div>
+                {/* Decorative Elements */}
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full flex items-center justify-center">
+                  <div className="relative">
+                    <div className="w-32 h-32 bg-violet-200 rounded-full animate-ping absolute"></div>
+                    <div className="w-16 h-16 bg-gradient-to-br from-violet-600 to-indigo-600 rounded-full flex items-center justify-center relative z-10 shadow-lg shadow-violet-500/50">
+                      <Car className="w-8 h-8 text-white" />
                     </div>
                   </div>
                 </div>
 
-                {/* Ride Details Card */}
-                <div className="mt-6 p-4 bg-gray-800/50 rounded-xl border border-gray-700">
+                {/* Simulated Driver Card */}
+                <div className="absolute bottom-6 left-6 right-6 p-4 bg-white rounded-xl border border-slate-200 shadow-lg">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 bg-gradient-to-br from-violet-600 to-indigo-600 rounded-full flex items-center justify-center text-white font-semibold">
+                      <div className="w-12 h-12 bg-gradient-to-br from-violet-500 to-indigo-500 rounded-full flex items-center justify-center text-white font-bold">
                         JD
                       </div>
                       <div>
-                        <p className="font-semibold text-white">John Driver</p>
-                        <div className="flex items-center gap-1 text-amber-400">
-                          <Star className="w-3 h-3 fill-current" />
-                          <span className="text-xs">4.9</span>
-                        </div>
+                        <p className="font-semibold text-slate-900">John Driver</p>
+                        <p className="text-sm text-slate-500">2 min away • ★ 4.9</p>
                       </div>
                     </div>
                     <div className="text-right">
-                      <p className="text-2xl font-bold text-white">$12.50</p>
-                      <p className="text-xs text-gray-400">Est. 15 min</p>
+                      <span className="px-3 py-1 bg-emerald-100 text-emerald-700 text-sm font-medium rounded-full">Arriving</span>
                     </div>
                   </div>
                 </div>
@@ -165,178 +126,88 @@ export default function Home() {
             </div>
           </div>
         </div>
-      </section>
 
-      {/* Features Section */}
-      <section id="features" className="py-20 px-6">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-white mb-4">Why Choose RideFlow</h2>
-            <p className="text-gray-400 max-w-2xl mx-auto">
-              We're redefining urban transportation with cutting-edge technology and premium service
-            </p>
-          </div>
-
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {[
-              {
-                icon: <Clock className="w-8 h-8" />,
-                title: "Quick Pickup",
-                description: "Average pickup time under 5 minutes in most areas",
-                color: "from-violet-600 to-indigo-600",
-              },
-              {
-                icon: <Shield className="w-8 h-8" />,
-                title: "Safe Rides",
-                description: "All drivers verified with background checks and training",
-                color: "from-emerald-600 to-teal-600",
-              },
-              {
-                icon: <CreditCard className="w-8 h-8" />,
-                title: "Easy Payments",
-                description: "Pay with card, digital wallet, or cash - your choice",
-                color: "from-amber-600 to-orange-600",
-              },
-              {
-                icon: <MapPin className="w-8 h-8" />,
-                title: "Live Tracking",
-                description: "Track your ride in real-time from request to destination",
-                color: "from-cyan-600 to-blue-600",
-              },
-            ].map((feature, index) => (
-              <div
-                key={index}
-                className="group p-6 bg-gray-900/50 border border-gray-800 rounded-2xl hover:border-violet-500/50 transition-all duration-300"
-              >
-                <div className={`w-16 h-16 bg-gradient-to-br ${feature.color} rounded-xl flex items-center justify-center text-white mb-4 group-hover:scale-110 transition-transform`}>
-                  {feature.icon}
-                </div>
-                <h3 className="text-xl font-semibold text-white mb-2">{feature.title}</h3>
-                <p className="text-gray-400">{feature.description}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* How It Works Section */}
-      <section id="how-it-works" className="py-20 px-6 bg-gray-900/30">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-white mb-4">How It Works</h2>
-            <p className="text-gray-400 max-w-2xl mx-auto">
-              Get a ride in just a few simple steps
-            </p>
-          </div>
-
-          <div className="grid md:grid-cols-3 gap-8">
-            {[
-              {
-                step: "01",
-                title: "Set Your Location",
-                description: "Enter your pickup location and destination. Get instant fare estimates.",
-              },
-              {
-                step: "02",
-                title: "Request & Match",
-                description: "Request a ride and get matched with a nearby driver in seconds.",
-              },
-              {
-                step: "03",
-                title: "Ride & Pay",
-                description: "Track your driver, enjoy the ride, and pay seamlessly when you arrive.",
-              },
-            ].map((item, index) => (
-              <div key={index} className="relative">
-                <div className="text-8xl font-bold text-gray-800/50 absolute -top-4 -left-4">
-                  {item.step}
-                </div>
-                <div className="relative pt-12 pl-8">
-                  <h3 className="text-2xl font-semibold text-white mb-3">{item.title}</h3>
-                  <p className="text-gray-400">{item.description}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* CTA Section */}
-      <section className="py-20 px-6">
-        <div className="max-w-4xl mx-auto">
-          <div className="relative overflow-hidden bg-gradient-to-br from-violet-600 to-indigo-600 rounded-3xl p-12 text-center">
-            <div className="absolute inset-0 bg-grid-white/10 [mask-image:linear-gradient(0deg,white,rgba(255,255,255,0.5))]"></div>
-            <div className="relative">
-              <h2 className="text-4xl font-bold text-white mb-4">Ready to Ride?</h2>
-              <p className="text-violet-100 mb-8 max-w-xl mx-auto">
-                Join thousands of riders who trust RideFlow for their daily commute and adventures.
+        {/* Features Section */}
+        <div id="features" className="w-full px-6 py-24 bg-white border-t border-slate-200">
+          <div className="max-w-7xl mx-auto">
+            <div className="text-center mb-16">
+              <h2 className="text-3xl md:text-5xl font-bold text-slate-900 mb-6">Why Choose YABONSE</h2>
+              <p className="text-slate-600 max-w-2xl mx-auto text-lg">
+                Premium service, safety first, and transparent pricing.
               </p>
-              <div className="flex flex-wrap justify-center gap-4">
-                <Link
-                  href="/register"
-                  className="px-8 py-4 bg-white text-violet-600 font-semibold rounded-xl hover:bg-gray-100 transition-all shadow-lg"
-                >
-                  Sign Up Now
-                </Link>
-                <Link
-                  href="/driver-register"
-                  className="px-8 py-4 bg-white/10 text-white font-semibold rounded-xl hover:bg-white/20 transition-all border border-white/20"
-                >
-                  Drive with Us
-                </Link>
-              </div>
+            </div>
+
+            <div className="grid md:grid-cols-4 gap-8">
+              {[
+                { icon: Clock, title: "Fast Pickup", desc: "Drivers in under 5 mins", color: "violet" },
+                { icon: Shield, title: "Safe Rides", desc: "Verified drivers only", color: "emerald" },
+                { icon: CreditCard, title: "Cashless", desc: "Secure in-app payments", color: "blue" },
+                { icon: MapPin, title: "Tracking", desc: "Real-time ride updates", color: "amber" }
+              ].map((item, i) => (
+                <div key={i} className="p-6 bg-slate-50 rounded-2xl border border-slate-200 hover:border-violet-300 hover:shadow-lg transition-all group">
+                  <div className={`w-12 h-12 bg-${item.color}-100 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform`}>
+                    <item.icon className={`w-6 h-6 text-${item.color}-600`} />
+                  </div>
+                  <h3 className="text-xl font-bold text-slate-900 mb-2">{item.title}</h3>
+                  <p className="text-slate-600">{item.desc}</p>
+                </div>
+              ))}
             </div>
           </div>
         </div>
-      </section>
+
+        {/* How It Works Section */}
+        <div id="how-it-works" className="w-full px-6 py-24 bg-slate-50 border-t border-slate-200">
+          <div className="max-w-7xl mx-auto">
+            <div className="text-center mb-16">
+              <h2 className="text-3xl md:text-5xl font-bold text-slate-900 mb-6">How It Works</h2>
+            </div>
+
+            <div className="grid md:grid-cols-3 gap-12">
+              {[
+                { step: "1", title: "Book", desc: "Set your pickup and drop-off" },
+                { step: "2", title: "Match", desc: "We'll find the nearest driver" },
+                { step: "3", title: "Ride", desc: "Hop in and enjoy your trip" }
+              ].map((item, i) => (
+                <div key={i} className="text-center">
+                  <div className="w-16 h-16 mx-auto bg-gradient-to-br from-violet-600 to-indigo-600 rounded-full flex items-center justify-center text-2xl font-bold text-white mb-6 shadow-lg shadow-violet-500/25">
+                    {item.step}
+                  </div>
+                  <h3 className="text-2xl font-bold text-slate-900 mb-3">{item.title}</h3>
+                  <p className="text-slate-600 text-lg">{item.desc}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* CTA Section */}
+        <div className="w-full px-6 py-24 bg-white border-t border-slate-200">
+          <div className="max-w-4xl mx-auto bg-gradient-to-r from-violet-600 to-indigo-600 rounded-3xl p-12 text-center shadow-2xl">
+            <h2 className="text-4xl font-bold text-white mb-6">Ready to get moving?</h2>
+            <p className="text-violet-100 mb-10 text-lg max-w-2xl mx-auto">
+              Download the app or sign up online to start riding today.
+            </p>
+            <div className="flex justify-center gap-4">
+              <Link href="/register" className="px-8 py-4 bg-white text-violet-600 font-bold rounded-xl hover:bg-slate-100 transition-colors shadow-lg">
+                Sign Up Now
+              </Link>
+            </div>
+          </div>
+        </div>
+
+      </main>
 
       {/* Footer */}
-      <footer className="py-12 px-6 border-t border-gray-800">
-        <div className="max-w-7xl mx-auto">
-          <div className="grid md:grid-cols-4 gap-8">
-            <div>
-              <div className="flex items-center gap-2 mb-4">
-                <div className="w-10 h-10 bg-gradient-to-br from-violet-600 to-indigo-600 rounded-xl flex items-center justify-center">
-                  <Car className="w-6 h-6 text-white" />
-                </div>
-                <span className="text-xl font-bold gradient-text">RideFlow</span>
-              </div>
-              <p className="text-gray-400 text-sm">
-                Premium ride-hailing for the modern world. Safe, fast, and reliable.
-              </p>
+      <footer className="w-full py-12 px-6 bg-slate-900 text-white">
+        <div className="max-w-7xl mx-auto text-center">
+          <div className="flex items-center justify-center gap-2 mb-4">
+            <div className="w-8 h-8 bg-gradient-to-br from-violet-500 to-indigo-500 rounded-lg flex items-center justify-center">
+              <Car className="w-5 h-5 text-white" />
             </div>
-
-            <div>
-              <h4 className="font-semibold text-white mb-4">Company</h4>
-              <ul className="space-y-2 text-gray-400 text-sm">
-                <li><a href="#" className="hover:text-white transition-colors">About Us</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Careers</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Press</a></li>
-              </ul>
-            </div>
-
-            <div>
-              <h4 className="font-semibold text-white mb-4">Support</h4>
-              <ul className="space-y-2 text-gray-400 text-sm">
-                <li><a href="#" className="hover:text-white transition-colors">Help Center</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Safety</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Contact Us</a></li>
-              </ul>
-            </div>
-
-            <div>
-              <h4 className="font-semibold text-white mb-4">Legal</h4>
-              <ul className="space-y-2 text-gray-400 text-sm">
-                <li><a href="#" className="hover:text-white transition-colors">Terms of Service</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Privacy Policy</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Cookie Policy</a></li>
-              </ul>
-            </div>
+            <span className="text-lg font-bold">YABONSE</span>
           </div>
-
-          <div className="mt-12 pt-8 border-t border-gray-800 text-center text-gray-500 text-sm">
-            © {new Date().getFullYear()} RideFlow. All rights reserved.
-          </div>
+          <p className="text-slate-400">&copy; {new Date().getFullYear()} YABONSE. All rights reserved.</p>
         </div>
       </footer>
     </div>

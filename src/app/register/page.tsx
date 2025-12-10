@@ -53,22 +53,22 @@ export default function RegisterPage() {
     };
 
     return (
-        <div className="min-h-screen animated-gradient flex items-center justify-center px-6 py-12">
+        <div className="min-h-screen bg-gradient-to-br from-slate-50 via-violet-50 to-indigo-50 flex items-center justify-center px-6 py-12">
             <div className="w-full max-w-md">
                 {/* Logo */}
                 <div className="text-center mb-8">
                     <Link href="/" className="inline-flex items-center gap-2">
-                        <div className="w-12 h-12 bg-gradient-to-br from-violet-600 to-indigo-600 rounded-xl flex items-center justify-center">
+                        <div className="w-12 h-12 bg-gradient-to-br from-violet-600 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg shadow-violet-500/25">
                             <Car className="w-7 h-7 text-white" />
                         </div>
-                        <span className="text-2xl font-bold gradient-text">RideFlow</span>
+                        <span className="text-2xl font-bold gradient-text">YABONSE</span>
                     </Link>
                 </div>
 
-                <Card className="backdrop-blur-xl">
+                <Card className="shadow-xl">
                     <div className="text-center mb-8">
-                        <h1 className="text-2xl font-bold text-white mb-2">Create Account</h1>
-                        <p className="text-gray-400">Join RideFlow and start riding today</p>
+                        <h1 className="text-2xl font-bold text-slate-900 mb-2">Create Account</h1>
+                        <p className="text-slate-500">Join YABONSE and start riding today</p>
                     </div>
 
                     <form onSubmit={handleSubmit} className="space-y-5">
@@ -118,7 +118,7 @@ export default function RegisterPage() {
                             <button
                                 type="button"
                                 onClick={() => setShowPassword(!showPassword)}
-                                className="absolute right-4 top-[42px] text-gray-400 hover:text-white transition-colors"
+                                className="absolute right-4 top-[38px] text-slate-400 hover:text-slate-600 transition-colors"
                             >
                                 {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                             </button>
@@ -136,29 +136,29 @@ export default function RegisterPage() {
                         />
 
                         {(error || validationError) && (
-                            <div className="p-4 bg-red-500/10 border border-red-500/30 rounded-xl text-red-400 text-sm">
+                            <div className="p-4 bg-red-50 border border-red-200 rounded-xl text-red-600 text-sm">
                                 {error || validationError}
                             </div>
                         )}
 
-                        <div className="flex items-start gap-2">
+                        <div className="flex items-start gap-3 pt-2">
                             <input
                                 type="checkbox"
                                 id="terms"
-                                className="mt-1 rounded border-gray-600 bg-gray-800 text-violet-600 focus:ring-violet-500"
+                                className="mt-1 rounded border-slate-300 text-violet-600 focus:ring-violet-500"
                                 required
                             />
-                            <label htmlFor="terms" className="text-sm text-gray-400">
+                            <label htmlFor="terms" className="text-sm text-slate-600 leading-relaxed">
                                 I agree to the{' '}
-                                <a href="#" className="text-violet-400 hover:text-violet-300">Terms of Service</a>
+                                <a href="#" className="text-violet-600 hover:text-violet-700 font-medium">Terms of Service</a>
                                 {' '}and{' '}
-                                <a href="#" className="text-violet-400 hover:text-violet-300">Privacy Policy</a>
+                                <a href="#" className="text-violet-600 hover:text-violet-700 font-medium">Privacy Policy</a>
                             </label>
                         </div>
 
                         <Button
                             type="submit"
-                            className="w-full"
+                            className="w-full mt-2"
                             size="lg"
                             loading={loading}
                         >
@@ -167,19 +167,19 @@ export default function RegisterPage() {
                     </form>
 
                     <div className="mt-8 text-center">
-                        <p className="text-gray-400">
+                        <p className="text-slate-500">
                             Already have an account?{' '}
-                            <Link href="/login" className="text-violet-400 hover:text-violet-300 font-medium transition-colors">
+                            <Link href="/login" className="text-violet-600 hover:text-violet-700 font-medium">
                                 Sign in
                             </Link>
                         </p>
                     </div>
 
-                    <div className="mt-6 pt-6 border-t border-gray-800">
-                        <p className="text-center text-gray-500 text-sm mb-4">Want to drive with us?</p>
+                    <div className="mt-6 pt-6 border-t border-slate-200">
+                        <p className="text-center text-slate-400 text-sm mb-4">Want to drive with us?</p>
                         <Link
                             href="/driver-register"
-                            className="flex items-center justify-center gap-2 w-full px-4 py-3 bg-gray-800 hover:bg-gray-700 rounded-xl text-gray-300 font-medium transition-colors"
+                            className="flex items-center justify-center gap-2 w-full px-4 py-3 bg-slate-100 hover:bg-slate-200 rounded-xl text-slate-700 font-medium transition-colors"
                         >
                             <Car className="w-5 h-5" />
                             Register as a Driver

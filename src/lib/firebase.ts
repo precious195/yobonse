@@ -5,27 +5,21 @@ import { getDatabase, Database } from 'firebase/database';
 import { getStorage, FirebaseStorage } from 'firebase/storage';
 
 const firebaseConfig = {
-    apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
-    authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
-    databaseURL: process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL,
-    projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
-    storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
-    messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
-    appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
+    apiKey: "AIzaSyCcPxOzkM1abTCE8_0_usaUpbildM8B80o",
+    authDomain: "studio-6770964930-e9fa9.firebaseapp.com",
+    databaseURL: "https://studio-6770964930-e9fa9-default-rtdb.firebaseio.com",
+    projectId: "studio-6770964930-e9fa9",
+    storageBucket: "studio-6770964930-e9fa9.firebasestorage.app",
+    messagingSenderId: "944200457183",
+    appId: "1:944200457183:web:9ee75e0a91c399b0bf426a"
 };
 
-// Initialize Firebase (prevent re-initialization in development)
-let app: FirebaseApp;
-let auth: Auth;
-let database: Database;
-let storage: FirebaseStorage;
-
-if (typeof window !== 'undefined') {
-    app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
-    auth = getAuth(app);
-    database = getDatabase(app);
-    storage = getStorage(app);
-}
+// Initialize Firebase (singleton pattern to prevent re-initialization)
+const app: FirebaseApp = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
+const auth: Auth = getAuth(app);
+const database: Database = getDatabase(app);
+const storage: FirebaseStorage = getStorage(app);
 
 export { app, auth, database, storage };
-export default app!;
+export default app;
+

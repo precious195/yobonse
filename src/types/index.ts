@@ -96,6 +96,7 @@ export interface Ride {
     fare: number | null;
     timestamps: RideTimestamps;
     cancelReason: string | null;
+    paymentStatus?: 'PENDING' | 'COMPLETED' | 'FAILED';
 }
 
 // Active Ride (for real-time tracking)
@@ -171,4 +172,78 @@ export interface AppStats {
     totalRevenue: number;
     activeRides: number;
     onlineDrivers: number;
+    totalDeliveries?: number;
+}
+
+// Delivery Types
+export type DeliveryStatus = 'REQUESTED' | 'ACCEPTED' | 'PICKED_UP' | 'IN_TRANSIT' | 'DELIVERED' | 'CANCELLED';
+export type ParcelSize = 'SMALL' | 'MEDIUM' | 'LARGE' | 'EXTRA_LARGE';
+
+export interface ParcelDetails {
+    size: ParcelSize;
+    description: string;
+    isFragile: boolean;
+    isUrgent: boolean;
+    weight?: number;
+}
+
+export interface RecipientInfo {
+    name: string;
+    phone: string;
+}
+
+export interface DeliveryTimestamps {
+    requestedAt: number;
+    acceptedAt: number | null;
+    pickedUpAt: number | null;
+    deliveredAt: number | null;
+    cancelledAt: number | null;
+}
+
+export interface Delivery {
+    id: string;
+    senderId: string;
+    senderName: string;
+    senderPhone: string;
+    driverId: string | null;
+    driverName: string | null;
+    pickup: Location;
+    dropoff: Location;
+    recipient: RecipientInfo;
+    parcel: ParcelDetails;
+    status: DeliveryStatus;
+    distance: number | null;
+    duration: number | null;
+    fare: number | null;
+    paymentMethod: 'CASH';
+    timestamps: DeliveryTimestamps;
+    cancelReason: string | null;
+    pickupPhoto?: string;
+    deliveryPhoto?: string;
+}
+
+// Platform Settings (Admin controlled pricing)
+export interface PricingSettings {
+    // Ride pricing
+    rideBaseFare: number;
+    ridePerKmRate: number;
+    rideMinFare: number;
+
+    // Delivery pricing by parcel size
+    deliverySmallBase: number;
+    deliveryMediumBase: number;
+    deliveryLargeBase: number;
+    deliveryExtraLargeBase: number;
+    deliveryPerKmRate: number;
+    deliveryUrgentFee: number;
+
+    // Currency
+    currency: string;
+    currencySymbol: string;
+}
+
+export interface PlatformSettings {
+    pricing: PricingSettings;
+    updatedAt: number;
+    updatedBy: string;
 }

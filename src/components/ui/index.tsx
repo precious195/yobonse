@@ -13,11 +13,11 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         const baseStyles = 'inline-flex items-center justify-center font-semibold rounded-xl transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed';
 
         const variants = {
-            primary: 'bg-gradient-to-r from-violet-600 to-indigo-600 text-white hover:from-violet-700 hover:to-indigo-700 focus:ring-violet-500 shadow-lg shadow-violet-500/25',
-            secondary: 'bg-gray-800 text-white hover:bg-gray-700 focus:ring-gray-500',
-            outline: 'border-2 border-gray-700 text-gray-200 hover:bg-gray-800 focus:ring-gray-500',
-            ghost: 'text-gray-300 hover:bg-gray-800 focus:ring-gray-500',
-            danger: 'bg-gradient-to-r from-red-600 to-rose-600 text-white hover:from-red-700 hover:to-rose-700 focus:ring-red-500 shadow-lg shadow-red-500/25',
+            primary: 'bg-gradient-to-r from-violet-700 to-indigo-700 text-white hover:from-violet-800 hover:to-indigo-800 focus:ring-violet-500 shadow-lg shadow-violet-600/30',
+            secondary: 'bg-slate-200 text-slate-800 hover:bg-slate-300 focus:ring-slate-400',
+            outline: 'border-2 border-slate-300 text-slate-700 hover:bg-slate-100 focus:ring-slate-400',
+            ghost: 'text-slate-600 hover:bg-slate-100 focus:ring-slate-400',
+            danger: 'bg-gradient-to-r from-red-500 to-rose-500 text-white hover:from-red-600 hover:to-rose-600 focus:ring-red-500 shadow-lg shadow-red-500/25',
         };
 
         const sizes = {
@@ -58,24 +58,24 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
         return (
             <div className="w-full">
                 {label && (
-                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                         {label}
                     </label>
                 )}
                 <div className="relative">
                     {icon && (
-                        <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-gray-400">
+                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400 dark:text-slate-500">
                             {icon}
                         </div>
                     )}
                     <input
                         ref={ref}
                         className={`
-              w-full px-4 py-3 bg-gray-800/50 border border-gray-700 rounded-xl
-              text-white placeholder-gray-500
+              w-full py-3 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-xl
+              text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500
               focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent
               transition-all duration-200
-              ${icon ? 'pl-12' : ''}
+              ${icon ? 'pl-11 pr-4' : 'px-4'}
               ${error ? 'border-red-500 focus:ring-red-500' : ''}
               ${className}
             `}
@@ -83,7 +83,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
                     />
                 </div>
                 {error && (
-                    <p className="mt-2 text-sm text-red-400">{error}</p>
+                    <p className="mt-2 text-sm text-red-500">{error}</p>
                 )}
             </div>
         );
@@ -102,8 +102,8 @@ export function Card({ children, className = '', hover = false }: CardProps) {
     return (
         <div
             className={`
-        bg-gray-900/50 backdrop-blur-xl border border-gray-800 rounded-2xl p-6
-        ${hover ? 'hover:border-violet-500/50 transition-all duration-300' : ''}
+        bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-6 shadow-sm
+        ${hover ? 'hover:border-violet-300 dark:hover:border-violet-600 hover:shadow-md transition-all duration-300' : ''}
         ${className}
       `}
         >
@@ -121,11 +121,11 @@ interface BadgeProps {
 
 export function Badge({ children, variant = 'default', className = '' }: BadgeProps) {
     const variants = {
-        default: 'bg-gray-700 text-gray-200',
-        success: 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30',
-        warning: 'bg-amber-500/20 text-amber-400 border border-amber-500/30',
-        danger: 'bg-red-500/20 text-red-400 border border-red-500/30',
-        info: 'bg-blue-500/20 text-blue-400 border border-blue-500/30',
+        default: 'bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300',
+        success: 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400',
+        warning: 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400',
+        danger: 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400',
+        info: 'bg-violet-100 dark:bg-violet-900/30 text-violet-700 dark:text-violet-400',
     };
 
     return (
@@ -147,32 +147,34 @@ export function Avatar({ src, name, size = 'md', className = '' }: AvatarProps) 
     const sizes = {
         sm: 'w-8 h-8 text-xs',
         md: 'w-10 h-10 text-sm',
-        lg: 'w-12 h-12 text-base',
-        xl: 'w-16 h-16 text-lg',
+        lg: 'w-14 h-14 text-base',
+        xl: 'w-20 h-20 text-xl',
     };
 
-    const initials = name
-        .split(' ')
-        .map((n) => n[0])
-        .join('')
-        .toUpperCase()
-        .slice(0, 2);
+    const getInitials = (name: string) => {
+        return name
+            .split(' ')
+            .map((n) => n[0])
+            .join('')
+            .toUpperCase()
+            .slice(0, 2);
+    };
 
     if (src) {
         return (
             <img
                 src={src}
                 alt={name}
-                className={`${sizes[size]} rounded-full object-cover ring-2 ring-gray-700 ${className}`}
+                className={`${sizes[size]} rounded-full object-cover ring-2 ring-white shadow ${className}`}
             />
         );
     }
 
     return (
         <div
-            className={`${sizes[size]} rounded-full bg-gradient-to-br from-violet-600 to-indigo-600 flex items-center justify-center font-semibold text-white ring-2 ring-gray-700 ${className}`}
+            className={`${sizes[size]} rounded-full bg-gradient-to-br from-violet-500 to-indigo-500 flex items-center justify-center text-white font-semibold ring-2 ring-white shadow ${className}`}
         >
-            {initials}
+            {getInitials(name)}
         </div>
     );
 }
@@ -192,10 +194,7 @@ export function Spinner({ size = 'md', className = '' }: SpinnerProps) {
 
     return (
         <div className={`${sizes[size]} ${className}`}>
-            <svg className="animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-            </svg>
+            <div className="w-full h-full border-4 border-violet-200 border-t-violet-600 rounded-full animate-spin"></div>
         </div>
     );
 }
@@ -210,6 +209,8 @@ interface ModalProps {
 }
 
 export function Modal({ isOpen, onClose, title, children, size = 'md' }: ModalProps) {
+    if (!isOpen) return null;
+
     const sizes = {
         sm: 'max-w-sm',
         md: 'max-w-md',
@@ -217,36 +218,30 @@ export function Modal({ isOpen, onClose, title, children, size = 'md' }: ModalPr
         xl: 'max-w-xl',
     };
 
-    if (!isOpen) return null;
-
     return (
-        <div className="fixed inset-0 z-50 overflow-y-auto">
-            <div className="flex min-h-screen items-center justify-center p-4">
-                {/* Backdrop */}
-                <div
-                    className="fixed inset-0 bg-black/70 backdrop-blur-sm transition-opacity"
-                    onClick={onClose}
-                />
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            {/* Backdrop */}
+            <div
+                className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+                onClick={onClose}
+            ></div>
 
-                {/* Modal */}
-                <div className={`relative ${sizes[size]} w-full bg-gray-900 border border-gray-800 rounded-2xl shadow-2xl transform transition-all`}>
-                    {title && (
-                        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-800">
-                            <h3 className="text-lg font-semibold text-white">{title}</h3>
-                            <button
-                                onClick={onClose}
-                                className="text-gray-400 hover:text-white transition-colors"
-                            >
-                                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                                </svg>
-                            </button>
-                        </div>
-                    )}
-                    <div className="p-6">
-                        {children}
+            {/* Modal */}
+            <div className={`relative w-full ${sizes[size]} bg-white dark:bg-slate-800 rounded-2xl shadow-2xl p-6 max-h-[90vh] overflow-y-auto`}>
+                {title && (
+                    <div className="flex items-center justify-between mb-6">
+                        <h2 className="text-xl font-bold text-slate-900 dark:text-white">{title}</h2>
+                        <button
+                            onClick={onClose}
+                            className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors"
+                        >
+                            <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                        </button>
                     </div>
-                </div>
+                )}
+                {children}
             </div>
         </div>
     );
@@ -263,24 +258,23 @@ interface StatsCardProps {
 
 export function StatsCard({ title, value, change, changeType, icon }: StatsCardProps) {
     return (
-        <Card className="relative overflow-hidden">
-            <div className="absolute top-0 right-0 -mt-4 -mr-4 w-24 h-24 bg-gradient-to-br from-violet-600/20 to-indigo-600/20 rounded-full blur-2xl" />
-            <div className="relative">
-                <div className="flex items-center justify-between">
-                    <p className="text-sm font-medium text-gray-400">{title}</p>
-                    {icon && (
-                        <div className="p-2 bg-violet-500/20 rounded-lg text-violet-400">
-                            {icon}
-                        </div>
+        <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-6 shadow-sm">
+            <div className="flex items-center justify-between">
+                <div>
+                    <p className="text-sm text-slate-500 dark:text-slate-400 mb-1">{title}</p>
+                    <p className="text-2xl font-bold text-slate-900 dark:text-white">{value}</p>
+                    {change && (
+                        <p className={`text-sm mt-1 ${changeType === 'increase' ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-500 dark:text-red-400'}`}>
+                            {changeType === 'increase' ? '↑' : '↓'} {change}
+                        </p>
                     )}
                 </div>
-                <p className="mt-2 text-3xl font-bold text-white">{value}</p>
-                {change && (
-                    <p className={`mt-2 text-sm ${changeType === 'increase' ? 'text-emerald-400' : 'text-red-400'}`}>
-                        {changeType === 'increase' ? '↑' : '↓'} {change}
-                    </p>
+                {icon && (
+                    <div className="w-12 h-12 bg-violet-100 dark:bg-violet-900/30 rounded-xl flex items-center justify-center text-violet-600 dark:text-violet-400">
+                        {icon}
+                    </div>
                 )}
             </div>
-        </Card>
+        </div>
     );
 }

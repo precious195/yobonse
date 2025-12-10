@@ -134,8 +134,8 @@ export default function AdminDashboard() {
         <div className="space-y-8">
             {/* Header */}
             <div>
-                <h1 className="text-3xl font-bold text-white">Dashboard Overview</h1>
-                <p className="text-gray-400 mt-1">Monitor your platform's performance in real-time</p>
+                <h1 className="text-3xl font-bold text-slate-900">Dashboard Overview</h1>
+                <p className="text-slate-500 mt-1">Monitor your platform's performance in real-time</p>
             </div>
 
             {/* Stats Grid */}

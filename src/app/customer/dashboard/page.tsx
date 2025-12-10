@@ -9,11 +9,13 @@ import {
     Star,
     ArrowRight,
     Navigation,
-    CreditCard
+    CreditCard,
+    Package
 } from 'lucide-react';
 import { useAuth } from '@/lib/auth-context';
 import { Card, Button, Badge, StatsCard } from '@/components/ui';
-import { ref, onValue, query, orderByChild, equalTo, limitToLast } from 'firebase/database';
+import { CarAnimation3D } from '@/components/animations/CarAnimation3D';
+import { ref, onValue } from 'firebase/database';
 import { database } from '@/lib/firebase';
 import { Ride } from '@/types';
 
@@ -26,7 +28,6 @@ export default function CustomerDashboard() {
     useEffect(() => {
         if (!userData?.id) return;
 
-        // Listen for active rides
         const ridesRef = ref(database, 'rides');
         const unsubscribe = onValue(ridesRef, (snapshot) => {
             if (snapshot.exists()) {
@@ -38,17 +39,15 @@ export default function CustomerDashboard() {
                     }
                 });
 
-                // Find active ride
                 const active = rides.find(r =>
                     ['REQUESTED', 'ACCEPTED', 'ARRIVING', 'STARTED'].includes(r.status)
                 );
                 setActiveRide(active || null);
 
-                // Get recent completed rides
                 const completed = rides
                     .filter(r => r.status === 'COMPLETED')
-                    .sort((a, b) => (b.timestamps.completedAt || 0) - (a.timestamps.completedAt || 0))
-                    .slice(0, 3);
+                    .sort((a, b) => (b.timestamps?.completedAt || 0) - (a.timestamps?.completedAt || 0))
+                    .slice(0, 5);
                 setRecentRides(completed);
             }
             setLoading(false);
@@ -84,19 +83,45 @@ export default function CustomerDashboard() {
     return (
         <div className="space-y-8">
             {/* Welcome Section */}
-            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                <div>
-                    <h1 className="text-3xl font-bold text-white">
-                        Welcome back, {userData?.name?.split(' ')[0]}! 👋
-                    </h1>
-                    <p className="text-gray-400 mt-1">Where would you like to go today?</p>
-                </div>
-                <Link href="/customer/ride">
-                    <Button size="lg" className="group">
-                        <MapPin className="w-5 h-5 mr-2" />
-                        Book a Ride
-                        <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
-                    </Button>
+            <div>
+                <h1 className="text-3xl font-bold text-white">
+                    Welcome back, {userData?.name?.split(' ')[0]}! 👋
+                </h1>
+                <p className="text-gray-400 mt-1">What would you like to do today?</p>
+            </div>
+
+            {/* Quick Action Cards */}
+            <div className="grid sm:grid-cols-2 gap-4">
+                {/* Request Ride Card */}
+                <Link href="/customer/ride" className="group">
+                    <Card className="p-5 hover:border-violet-500/50 transition-all cursor-pointer bg-gradient-to-br from-violet-600/10 to-indigo-600/10 border-violet-500/20">
+                        <div className="flex items-center gap-4">
+                            <div className="w-14 h-14 bg-gradient-to-br from-violet-500 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg shadow-violet-500/25 group-hover:scale-110 transition-transform">
+                                <Car className="w-7 h-7 text-white" />
+                            </div>
+                            <div className="flex-1">
+                                <h3 className="text-lg font-semibold text-white">Request Ride</h3>
+                                <p className="text-gray-400 text-sm">Go anywhere in the city</p>
+                            </div>
+                            <ArrowRight className="w-5 h-5 text-violet-400 group-hover:translate-x-1 transition-transform" />
+                        </div>
+                    </Card>
+                </Link>
+
+                {/* Send Parcel Card */}
+                <Link href="/customer/delivery" className="group">
+                    <Card className="p-5 hover:border-emerald-500/50 transition-all cursor-pointer bg-gradient-to-br from-emerald-600/10 to-teal-600/10 border-emerald-500/20">
+                        <div className="flex items-center gap-4">
+                            <div className="w-14 h-14 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl flex items-center justify-center shadow-lg shadow-emerald-500/25 group-hover:scale-110 transition-transform">
+                                <Package className="w-7 h-7 text-white" />
+                            </div>
+                            <div className="flex-1">
+                                <h3 className="text-lg font-semibold text-white">Send Parcel</h3>
+                                <p className="text-gray-400 text-sm">Deliver packages fast</p>
+                            </div>
+                            <ArrowRight className="w-5 h-5 text-emerald-400 group-hover:translate-x-1 transition-transform" />
+                        </div>
+                    </Card>
                 </Link>
             </div>
 
@@ -121,139 +146,100 @@ export default function CustomerDashboard() {
                                 </div>
                                 <div>
                                     <p className="text-sm text-gray-400">Pickup</p>
-                                    <p className="text-white">{activeRide.pickup.address}</p>
+                                    <p className="text-white">{activeRide.pickup?.address || 'Loading...'}</p>
                                 </div>
                             </div>
-
                             <div className="flex items-start gap-3">
                                 <div className="w-8 h-8 bg-emerald-500/20 rounded-lg flex items-center justify-center flex-shrink-0">
                                     <div className="w-3 h-3 bg-emerald-500 rounded-full"></div>
                                 </div>
                                 <div>
                                     <p className="text-sm text-gray-400">Destination</p>
-                                    <p className="text-white">{activeRide.destination.address}</p>
+                                    <p className="text-white">{activeRide.destination?.address || 'Loading...'}</p>
                                 </div>
                             </div>
                         </div>
 
-                        {activeRide.driverName && (
-                            <div className="flex items-center gap-4 p-4 bg-gray-800/50 rounded-xl">
-                                <div className="w-14 h-14 bg-gradient-to-br from-violet-600 to-indigo-600 rounded-full flex items-center justify-center text-white font-semibold text-lg">
-                                    {activeRide.driverName.split(' ').map(n => n[0]).join('')}
-                                </div>
-                                <div className="flex-1">
-                                    <p className="font-semibold text-white">{activeRide.driverName}</p>
-                                    <div className="flex items-center gap-1 text-amber-400">
-                                        <Star className="w-4 h-4 fill-current" />
-                                        <span className="text-sm">4.9</span>
+                        <div className="flex flex-col justify-center gap-4">
+                            {activeRide.driverName && (
+                                <div className="flex items-center gap-3 p-3 bg-gray-800/50 rounded-xl">
+                                    <div className="w-12 h-12 bg-gradient-to-br from-violet-500 to-indigo-600 rounded-full flex items-center justify-center">
+                                        <span className="text-white font-bold">{activeRide.driverName[0]}</span>
+                                    </div>
+                                    <div>
+                                        <p className="text-white font-medium">{activeRide.driverName}</p>
+                                        <div className="flex items-center gap-1 text-amber-400">
+                                            <Star className="w-4 h-4 fill-current" />
+                                            <span className="text-sm">4.8</span>
+                                        </div>
                                     </div>
                                 </div>
-                                <div className="text-right">
-                                    <p className="text-2xl font-bold text-white">${activeRide.fare?.toFixed(2)}</p>
-                                    <p className="text-sm text-gray-400">{activeRide.duration} min</p>
+                            )}
+                            {activeRide.fare && (
+                                <div className="text-center">
+                                    <p className="text-gray-400 text-sm">Estimated Fare</p>
+                                    <p className="text-2xl font-bold text-white">K{activeRide.fare}</p>
                                 </div>
-                            </div>
-                        )}
-                    </div>
-
-                    <div className="mt-6 flex gap-4">
-                        <Link href={`/customer/ride/${activeRide.id}`} className="flex-1">
-                            <Button className="w-full">
-                                <Navigation className="w-5 h-5 mr-2" />
-                                Track Ride
-                            </Button>
-                        </Link>
+                            )}
+                        </div>
                     </div>
                 </Card>
             )}
 
-            {/* Quick Actions */}
-            {!activeRide && (
-                <div className="grid md:grid-cols-3 gap-6">
-                    <Link href="/customer/ride">
-                        <Card hover className="cursor-pointer group">
-                            <div className="flex items-center gap-4">
-                                <div className="w-14 h-14 bg-gradient-to-br from-violet-600 to-indigo-600 rounded-xl flex items-center justify-center text-white group-hover:scale-110 transition-transform">
-                                    <Car className="w-7 h-7" />
-                                </div>
-                                <div>
-                                    <h3 className="font-semibold text-white">Book a Ride</h3>
-                                    <p className="text-sm text-gray-400">Get picked up now</p>
-                                </div>
-                            </div>
-                        </Card>
-                    </Link>
-
-                    <Link href="/customer/history">
-                        <Card hover className="cursor-pointer group">
-                            <div className="flex items-center gap-4">
-                                <div className="w-14 h-14 bg-gradient-to-br from-amber-600 to-orange-600 rounded-xl flex items-center justify-center text-white group-hover:scale-110 transition-transform">
-                                    <Clock className="w-7 h-7" />
-                                </div>
-                                <div>
-                                    <h3 className="font-semibold text-white">Ride History</h3>
-                                    <p className="text-sm text-gray-400">View past trips</p>
-                                </div>
-                            </div>
-                        </Card>
-                    </Link>
-
-                    <Link href="/customer/settings">
-                        <Card hover className="cursor-pointer group">
-                            <div className="flex items-center gap-4">
-                                <div className="w-14 h-14 bg-gradient-to-br from-emerald-600 to-teal-600 rounded-xl flex items-center justify-center text-white group-hover:scale-110 transition-transform">
-                                    <CreditCard className="w-7 h-7" />
-                                </div>
-                                <div>
-                                    <h3 className="font-semibold text-white">Payment</h3>
-                                    <p className="text-sm text-gray-400">Manage payment methods</p>
-                                </div>
-                            </div>
-                        </Card>
-                    </Link>
-                </div>
-            )}
-
             {/* Recent Rides */}
             <div>
-                <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center justify-between mb-4">
                     <h2 className="text-xl font-semibold text-white">Recent Rides</h2>
-                    <Link href="/customer/history" className="text-violet-400 hover:text-violet-300 text-sm font-medium">
-                        View All
+                    <Link href="/customer/history" className="text-violet-400 hover:text-violet-300 text-sm flex items-center gap-1">
+                        View All <ArrowRight className="w-4 h-4" />
                     </Link>
                 </div>
 
-                {recentRides.length === 0 ? (
-                    <Card className="text-center py-12">
-                        <Car className="w-12 h-12 mx-auto text-gray-600 mb-4" />
-                        <h3 className="text-lg font-medium text-white mb-2">No rides yet</h3>
-                        <p className="text-gray-400 mb-6">Book your first ride and it will appear here</p>
-                        <Link href="/customer/ride">
-                            <Button>Book Your First Ride</Button>
-                        </Link>
-                    </Card>
-                ) : (
-                    <div className="space-y-4">
+                {recentRides.length > 0 ? (
+                    <div className="space-y-3">
                         {recentRides.map((ride) => (
-                            <Card key={ride.id} hover className="cursor-pointer">
-                                <div className="flex items-center gap-4">
-                                    <div className="w-12 h-12 bg-gray-800 rounded-xl flex items-center justify-center">
-                                        <Car className="w-6 h-6 text-gray-400" />
-                                    </div>
-                                    <div className="flex-1 min-w-0">
-                                        <p className="font-medium text-white truncate">{ride.destination.address}</p>
-                                        <p className="text-sm text-gray-400">
-                                            {new Date(ride.timestamps.completedAt!).toLocaleDateString()}
-                                        </p>
+                            <Card key={ride.id} className="hover:border-gray-600 transition-colors">
+                                <div className="flex items-center justify-between">
+                                    <div className="flex items-center gap-4">
+                                        <div className="w-12 h-12 bg-gradient-to-br from-violet-500/20 to-indigo-600/20 rounded-xl flex items-center justify-center">
+                                            <Car className="w-6 h-6 text-violet-400" />
+                                        </div>
+                                        <div>
+                                            <p className="text-white font-medium">{ride.destination?.address || 'Unknown'}</p>
+                                            <div className="flex items-center gap-3 text-sm text-gray-400">
+                                                <span className="flex items-center gap-1">
+                                                    <Clock className="w-3 h-3" />
+                                                    {new Date(ride.timestamps?.completedAt || 0).toLocaleDateString()}
+                                                </span>
+                                                {ride.distance && (
+                                                    <span className="flex items-center gap-1">
+                                                        <Navigation className="w-3 h-3" />
+                                                        {ride.distance} km
+                                                    </span>
+                                                )}
+                                            </div>
+                                        </div>
                                     </div>
                                     <div className="text-right">
-                                        <p className="font-semibold text-white">${ride.fare?.toFixed(2)}</p>
-                                        <Badge variant="success" className="mt-1">Completed</Badge>
+                                        <p className="text-white font-semibold">K{ride.fare || 0}</p>
+                                        <Badge variant="success" className="text-xs">Completed</Badge>
                                     </div>
                                 </div>
                             </Card>
                         ))}
                     </div>
+                ) : (
+                    <Card className="text-center py-12">
+                        <CarAnimation3D />
+                        <h3 className="text-lg font-medium text-slate-800 mt-4">No rides yet</h3>
+                        <p className="text-slate-500 mt-1">Book your first ride and it will appear here.</p>
+                        <Link href="/customer/ride">
+                            <Button className="mt-4">
+                                <Car className="w-4 h-4 mr-2" />
+                                Book Your First Ride
+                            </Button>
+                        </Link>
+                    </Card>
                 )}
             </div>
         </div>

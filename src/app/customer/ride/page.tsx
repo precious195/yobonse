@@ -1,283 +1,361 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import {
     MapPin,
     Navigation,
-    Clock,
     DollarSign,
+    Clock,
+    Banknote,
     Car,
-    CreditCard,
-    ArrowRight,
-    Loader2
+    Zap,
+    ChevronUp,
+    ChevronDown,
+    X,
+    Target,
+    Locate
 } from 'lucide-react';
 import { useAuth } from '@/lib/auth-context';
-import { Card, Button, Input, Badge } from '@/components/ui';
-import { ref, push, set, serverTimestamp } from 'firebase/database';
+import { Card, Button, Badge } from '@/components/ui';
+import { RideMap, PlacesAutocomplete } from '@/components/maps/GoogleMap';
+import { ref, push, set, get } from 'firebase/database';
 import { database } from '@/lib/firebase';
 import toast from 'react-hot-toast';
+import { PricingSettings } from '@/types';
 
-export default function BookRidePage() {
+interface Location {
+    lat: number;
+    lng: number;
+    address?: string;
+}
+
+// Default pricing (will be overridden by Firebase)
+const DEFAULT_PRICING: PricingSettings = {
+    rideBaseFare: 15,
+    ridePerKmRate: 5,
+    rideMinFare: 20,
+    deliverySmallBase: 25,
+    deliveryMediumBase: 40,
+    deliveryLargeBase: 60,
+    deliveryExtraLargeBase: 100,
+    deliveryPerKmRate: 8,
+    deliveryUrgentFee: 20,
+    currency: 'ZMW',
+    currencySymbol: 'K'
+};
+
+export default function RideBookingPage() {
     const router = useRouter();
     const { user, userData } = useAuth();
 
-    const [pickup, setPickup] = useState({
-        address: '',
-        lat: 0,
-        lng: 0,
-    });
-
-    const [destination, setDestination] = useState({
-        address: '',
-        lat: 0,
-        lng: 0,
-    });
-
+    const [pickup, setPickup] = useState<Location | null>(null);
+    const [destination, setDestination] = useState<Location | null>(null);
+    const [selectMode, setSelectMode] = useState<'pickup' | 'destination' | null>(null);
     const [loading, setLoading] = useState(false);
-    const [estimating, setEstimating] = useState(false);
-    const [estimate, setEstimate] = useState<{
-        fare: number;
-        distance: number;
-        duration: number;
-    } | null>(null);
+    const [fare, setFare] = useState<number | null>(null);
+    const [distance, setDistance] = useState<number | null>(null);
+    const [duration, setDuration] = useState<number | null>(null);
+    const [panelExpanded, setPanelExpanded] = useState(false);
+    const [pricing, setPricing] = useState<PricingSettings>(DEFAULT_PRICING);
 
-    // Simulate getting coordinates from address (in production, use Geocoding API)
-    const geocodeAddress = async (address: string) => {
-        // Simulated coordinates - replace with actual geocoding
-        return {
-            lat: 40.7128 + (Math.random() - 0.5) * 0.1,
-            lng: -74.0060 + (Math.random() - 0.5) * 0.1,
+    // Fetch pricing from Firebase
+    useEffect(() => {
+        const fetchPricing = async () => {
+            try {
+                const settingsRef = ref(database, 'settings/pricing');
+                const snapshot = await get(settingsRef);
+                if (snapshot.exists()) {
+                    setPricing({ ...DEFAULT_PRICING, ...snapshot.val() });
+                }
+            } catch (error) {
+                console.log('Using default pricing');
+            }
         };
+        fetchPricing();
+    }, []);
+
+    // Calculate fare when both locations are set
+    useEffect(() => {
+        if (pickup && destination) {
+            const R = 6371;
+            const dLat = (destination.lat - pickup.lat) * Math.PI / 180;
+            const dLon = (destination.lng - pickup.lng) * Math.PI / 180;
+            const a =
+                Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                Math.cos(pickup.lat * Math.PI / 180) * Math.cos(destination.lat * Math.PI / 180) *
+                Math.sin(dLon / 2) * Math.sin(dLon / 2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+            const dist = R * c;
+            const dur = Math.ceil((dist / 30) * 60);
+
+            // Use dynamic pricing from Firebase
+            let calculatedFare = pricing.rideBaseFare + (dist * pricing.ridePerKmRate);
+            calculatedFare = Math.max(calculatedFare, pricing.rideMinFare);
+
+            setDistance(Math.round(dist * 10) / 10);
+            setDuration(dur);
+            setFare(Math.round(calculatedFare));
+            setPanelExpanded(true);
+        } else {
+            setDistance(null);
+            setDuration(null);
+            setFare(null);
+        }
+    }, [pickup, destination, pricing]);
+
+    const handlePickupSelect = (location: Location) => {
+        setPickup(location);
+        setSelectMode(null);
     };
 
-    // Calculate fare estimate
-    const calculateEstimate = async () => {
-        if (!pickup.address || !destination.address) {
-            toast.error('Please enter both pickup and destination');
-            return;
-        }
-
-        setEstimating(true);
-        try {
-            // Get coordinates
-            const pickupCoords = await geocodeAddress(pickup.address);
-            const destCoords = await geocodeAddress(destination.address);
-
-            setPickup({ ...pickup, ...pickupCoords });
-            setDestination({ ...destination, ...destCoords });
-
-            // Calculate distance (simplified - use actual routing API in production)
-            const distance = Math.sqrt(
-                Math.pow((destCoords.lat - pickupCoords.lat) * 111, 2) +
-                Math.pow((destCoords.lng - pickupCoords.lng) * 111 * Math.cos(pickupCoords.lat * Math.PI / 180), 2)
-            );
-
-            // Estimate duration (assuming average speed of 30 km/h in city)
-            const duration = Math.round((distance / 30) * 60);
-
-            // Calculate fare ($2 base + $1.50/km + $0.25/min)
-            const fare = 2 + (distance * 1.5) + (duration * 0.25);
-
-            setEstimate({
-                fare: Math.round(fare * 100) / 100,
-                distance: Math.round(distance * 10) / 10,
-                duration: Math.max(5, duration), // Minimum 5 minutes
-            });
-        } catch (error) {
-            toast.error('Error calculating estimate');
-        } finally {
-            setEstimating(false);
-        }
+    const handleDestinationSelect = (location: Location) => {
+        setDestination(location);
+        setSelectMode(null);
     };
 
-    // Request ride
-    const requestRide = async () => {
-        if (!estimate || !user || !userData) {
-            toast.error('Please calculate estimate first');
+    const handleBookRide = async () => {
+        if (!pickup || !destination || !user || !userData) {
+            toast.error('Please select pickup and destination');
             return;
         }
 
         setLoading(true);
         try {
             const rideRef = push(ref(database, 'rides'));
-            const rideId = rideRef.key;
-
             const rideData = {
                 riderId: user.uid,
                 riderName: userData.name,
                 riderPhone: userData.phone || '',
-                driverId: null,
-                driverName: null,
                 pickup: {
                     lat: pickup.lat,
                     lng: pickup.lng,
-                    address: pickup.address,
+                    address: pickup.address || 'Selected location',
                 },
                 destination: {
                     lat: destination.lat,
                     lng: destination.lng,
-                    address: destination.address,
+                    address: destination.address || 'Selected location',
                 },
                 status: 'REQUESTED',
-                distance: estimate.distance,
-                duration: estimate.duration,
-                fare: estimate.fare,
+                fare,
+                distance,
+                duration,
+                paymentMethod: 'CASH',
                 timestamps: {
                     requestedAt: Date.now(),
-                    acceptedAt: null,
-                    arrivedAt: null,
-                    startedAt: null,
-                    completedAt: null,
-                    cancelledAt: null,
                 },
-                cancelReason: null,
             };
 
             await set(rideRef, rideData);
-
-            // Also add to active rides for real-time tracking
-            await set(ref(database, `activeRides/${rideId}`), {
-                riderId: user.uid,
-                driverId: null,
-                status: 'REQUESTED',
-                driverLocation: null,
-            });
-
             toast.success('Ride requested! Finding a driver...');
-            router.push(`/customer/ride/${rideId}`);
+            router.push(`/customer/ride/${rideRef.key}`);
         } catch (error) {
-            console.error('Error requesting ride:', error);
-            toast.error('Error requesting ride');
+            console.error('Error booking ride:', error);
+            toast.error('Failed to book ride');
         } finally {
             setLoading(false);
         }
     };
 
+    const useCurrentLocation = () => {
+        if ('geolocation' in navigator) {
+            toast.loading('Getting location...', { id: 'location-toast' });
+
+            navigator.geolocation.getCurrentPosition(
+                async (position) => {
+                    const { latitude, longitude } = position.coords;
+
+                    const geocoder = new google.maps.Geocoder();
+                    geocoder.geocode(
+                        { location: { lat: latitude, lng: longitude } },
+                        (results, status) => {
+                            toast.dismiss('location-toast');
+
+                            if (status === 'OK' && results && results[0]) {
+                                setPickup({
+                                    lat: latitude,
+                                    lng: longitude,
+                                    address: results[0].formatted_address,
+                                });
+                                toast.success('Location found!');
+                            } else {
+                                setPickup({
+                                    lat: latitude,
+                                    lng: longitude,
+                                    address: 'Current location',
+                                });
+                            }
+                        }
+                    );
+                },
+                (error) => {
+                    toast.dismiss('location-toast');
+                    toast.error('Could not get location');
+                },
+                { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
+            );
+        }
+    };
+
     return (
-        <div className="max-w-4xl mx-auto space-y-8">
-            <div>
-                <h1 className="text-3xl font-bold text-white mb-2">Book a Ride</h1>
-                <p className="text-gray-400">Enter your pickup and destination to get started</p>
+        <div className="h-[calc(100vh-80px)] lg:h-[calc(100vh-32px)] w-full relative overflow-hidden">
+            {/* Full Screen Map */}
+            <RideMap
+                pickup={pickup}
+                destination={destination}
+                onPickupSelect={handlePickupSelect}
+                onDestinationSelect={handleDestinationSelect}
+                selectMode={selectMode}
+                showRoute={!!(pickup && destination)}
+                className="absolute inset-0 h-full w-full"
+            />
+
+            {/* Floating Top Bar - Location Inputs */}
+            <div className="absolute top-2 left-2 right-2 sm:top-4 sm:left-4 sm:right-4 z-30">
+                <div className="bg-white rounded-xl sm:rounded-2xl shadow-xl border border-slate-200">
+                    {/* Pickup Input */}
+                    <div className="flex items-center gap-2 sm:gap-3 p-3 sm:p-4 border-b border-slate-100 relative">
+                        <div className="w-2.5 h-2.5 sm:w-3 sm:h-3 bg-violet-500 rounded-full flex-shrink-0"></div>
+                        <div className="flex-1 min-w-0 relative z-40">
+                            <PlacesAutocomplete
+                                placeholder="Where from?"
+                                value={pickup?.address || ''}
+                                onSelect={handlePickupSelect}
+                            />
+                        </div>
+                        <button
+                            onClick={useCurrentLocation}
+                            className="p-2 hover:bg-slate-100 rounded-lg sm:rounded-xl transition-colors flex-shrink-0"
+                            title="Use current location"
+                        >
+                            <Locate className="w-4 h-4 sm:w-5 sm:h-5 text-violet-600" />
+                        </button>
+                        <button
+                            onClick={() => setSelectMode(selectMode === 'pickup' ? null : 'pickup')}
+                            className={`p-2 rounded-lg sm:rounded-xl transition-colors flex-shrink-0 ${selectMode === 'pickup' ? 'bg-violet-100 text-violet-600' : 'hover:bg-slate-100 text-slate-400'}`}
+                        >
+                            <MapPin className="w-4 h-4 sm:w-5 sm:h-5" />
+                        </button>
+                    </div>
+
+                    {/* Destination Input */}
+                    <div className="flex items-center gap-2 sm:gap-3 p-3 sm:p-4 relative">
+                        <div className="w-2.5 h-2.5 sm:w-3 sm:h-3 bg-emerald-500 rounded-full flex-shrink-0"></div>
+                        <div className="flex-1 min-w-0 relative z-40">
+                            <PlacesAutocomplete
+                                placeholder="Where to?"
+                                value={destination?.address || ''}
+                                onSelect={handleDestinationSelect}
+                            />
+                        </div>
+                        <button
+                            onClick={() => setSelectMode(selectMode === 'destination' ? null : 'destination')}
+                            className={`p-2 rounded-lg sm:rounded-xl transition-colors flex-shrink-0 ${selectMode === 'destination' ? 'bg-emerald-100 text-emerald-600' : 'hover:bg-slate-100 text-slate-400'}`}
+                        >
+                            <MapPin className="w-4 h-4 sm:w-5 sm:h-5" />
+                        </button>
+                    </div>
+                </div>
             </div>
 
-            <div className="grid lg:grid-cols-5 gap-8">
-                {/* Booking Form */}
-                <div className="lg:col-span-3 space-y-6">
-                    <Card>
-                        <h2 className="text-lg font-semibold text-white mb-6">Trip Details</h2>
-
-                        <div className="space-y-4">
-                            {/* Pickup Location */}
-                            <div className="relative">
-                                <div className="absolute left-4 top-1/2 -translate-y-1/2 w-3 h-3 bg-violet-500 rounded-full z-10"></div>
-                                <Input
-                                    placeholder="Enter pickup location"
-                                    value={pickup.address}
-                                    onChange={(e) => setPickup({ ...pickup, address: e.target.value })}
-                                    className="pl-10"
-                                />
-                            </div>
-
-                            {/* Connector Line */}
-                            <div className="flex items-center pl-5">
-                                <div className="w-0.5 h-8 bg-gray-700"></div>
-                            </div>
-
-                            {/* Destination */}
-                            <div className="relative">
-                                <div className="absolute left-4 top-1/2 -translate-y-1/2 w-3 h-3 bg-emerald-500 rounded-full z-10"></div>
-                                <Input
-                                    placeholder="Enter destination"
-                                    value={destination.address}
-                                    onChange={(e) => setDestination({ ...destination, address: e.target.value })}
-                                    className="pl-10"
-                                />
-                            </div>
-                        </div>
-
-                        <Button
-                            className="w-full mt-6"
-                            onClick={calculateEstimate}
-                            loading={estimating}
-                            variant="secondary"
-                        >
-                            <Navigation className="w-5 h-5 mr-2" />
-                            Calculate Fare
-                        </Button>
-                    </Card>
-
-                    {/* Map Placeholder */}
-                    <Card className="h-64 flex items-center justify-center bg-gray-800/50">
-                        <div className="text-center">
-                            <MapPin className="w-12 h-12 mx-auto text-gray-600 mb-3" />
-                            <p className="text-gray-400">Map will be displayed here</p>
-                            <p className="text-sm text-gray-500">Connect Mapbox or Google Maps API</p>
-                        </div>
-                    </Card>
+            {/* Map Legend - Floating */}
+            <div className="absolute bottom-36 sm:bottom-44 right-2 sm:right-4 z-10 bg-white/95 backdrop-blur-sm rounded-lg sm:rounded-xl p-2 sm:p-3 shadow-lg border border-slate-200">
+                <div className="flex flex-col gap-1.5 sm:gap-2 text-xs">
+                    <div className="flex items-center gap-2">
+                        <div className="w-2.5 h-2.5 bg-violet-500 rounded-full"></div>
+                        <span className="text-slate-600">Pickup</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                        <div className="w-2.5 h-2.5 bg-emerald-500 rounded-full"></div>
+                        <span className="text-slate-600">Drop-off</span>
+                    </div>
                 </div>
+            </div>
 
-                {/* Fare Estimate & Confirm */}
-                <div className="lg:col-span-2 space-y-6">
-                    {estimate ? (
-                        <>
-                            <Card className="bg-gradient-to-br from-violet-600/20 to-indigo-600/20 border-violet-500/30">
-                                <h2 className="text-lg font-semibold text-white mb-4">Fare Estimate</h2>
+            {/* Floating Bottom Panel */}
+            <div className="absolute bottom-0 left-0 right-0 z-20 safe-area-bottom">
+                <div className="bg-white rounded-t-2xl sm:rounded-t-3xl shadow-2xl border-t border-slate-200">
+                    {/* Handle */}
+                    <button
+                        onClick={() => setPanelExpanded(!panelExpanded)}
+                        className="w-full flex justify-center py-2 sm:py-3"
+                    >
+                        <div className="w-10 sm:w-12 h-1 sm:h-1.5 bg-slate-300 rounded-full"></div>
+                    </button>
 
-                                <div className="text-center py-4">
-                                    <p className="text-5xl font-bold text-white">${estimate.fare.toFixed(2)}</p>
-                                    <p className="text-gray-400 mt-2">Estimated fare</p>
+                    {/* Trip Estimate - Always visible when available */}
+                    {fare && distance && duration && (
+                        <div className="px-4 sm:px-6 pb-3 sm:pb-4 flex items-center justify-between border-b border-slate-100">
+                            <div className="flex items-center gap-4 sm:gap-6">
+                                <div className="flex items-center gap-1.5 sm:gap-2">
+                                    <MapPin className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-slate-400" />
+                                    <span className="text-slate-600 font-medium text-sm sm:text-base">{distance} km</span>
                                 </div>
-
-                                <div className="grid grid-cols-2 gap-4 mt-6">
-                                    <div className="p-4 bg-gray-800/50 rounded-xl text-center">
-                                        <Clock className="w-6 h-6 mx-auto text-violet-400 mb-2" />
-                                        <p className="text-xl font-semibold text-white">{estimate.duration} min</p>
-                                        <p className="text-sm text-gray-400">Duration</p>
-                                    </div>
-                                    <div className="p-4 bg-gray-800/50 rounded-xl text-center">
-                                        <Navigation className="w-6 h-6 mx-auto text-emerald-400 mb-2" />
-                                        <p className="text-xl font-semibold text-white">{estimate.distance} km</p>
-                                        <p className="text-sm text-gray-400">Distance</p>
-                                    </div>
+                                <div className="flex items-center gap-1.5 sm:gap-2">
+                                    <Clock className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-slate-400" />
+                                    <span className="text-slate-600 font-medium text-sm sm:text-base">{duration} min</span>
                                 </div>
-                            </Card>
-
-                            <Card>
-                                <h2 className="text-lg font-semibold text-white mb-4">Payment Method</h2>
-                                <div className="space-y-3">
-                                    <label className="flex items-center gap-4 p-4 bg-gray-800/50 rounded-xl cursor-pointer border-2 border-violet-500">
-                                        <input type="radio" name="payment" defaultChecked className="text-violet-600" />
-                                        <CreditCard className="w-6 h-6 text-gray-400" />
-                                        <span className="text-white">Credit/Debit Card</span>
-                                        <Badge variant="success" className="ml-auto">Default</Badge>
-                                    </label>
-                                    <label className="flex items-center gap-4 p-4 bg-gray-800/50 rounded-xl cursor-pointer border border-gray-700">
-                                        <input type="radio" name="payment" className="text-violet-600" />
-                                        <DollarSign className="w-6 h-6 text-gray-400" />
-                                        <span className="text-white">Cash</span>
-                                    </label>
-                                </div>
-                            </Card>
-
-                            <Button
-                                className="w-full"
-                                size="lg"
-                                onClick={requestRide}
-                                loading={loading}
-                            >
-                                <Car className="w-5 h-5 mr-2" />
-                                Request Ride
-                                <ArrowRight className="w-5 h-5 ml-2" />
-                            </Button>
-                        </>
-                    ) : (
-                        <Card className="text-center py-12">
-                            <Car className="w-16 h-16 mx-auto text-gray-600 mb-4" />
-                            <h3 className="text-lg font-medium text-white mb-2">Enter Trip Details</h3>
-                            <p className="text-gray-400">Enter pickup and destination to see fare estimate</p>
-                        </Card>
+                            </div>
+                            <div className="text-xl sm:text-2xl font-bold text-slate-900">{pricing.currencySymbol}{fare}</div>
+                        </div>
                     )}
+
+                    {/* Expandable Content - WITHOUT the button */}
+                    {panelExpanded && (
+                        <div className="px-4 sm:px-6 py-3 sm:py-4 space-y-3 sm:space-y-4 max-h-40 overflow-y-auto border-b border-slate-100">
+                            {/* Ride Type Selection */}
+                            <div className="flex gap-2 sm:gap-3">
+                                <button className="flex-1 p-3 sm:p-4 bg-violet-50 border-2 border-violet-500 rounded-xl sm:rounded-2xl flex items-center gap-2 sm:gap-3 transition-all">
+                                    <div className="w-10 h-10 sm:w-12 sm:h-12 bg-violet-100 rounded-lg sm:rounded-xl flex items-center justify-center flex-shrink-0">
+                                        <Car className="w-5 h-5 sm:w-6 sm:h-6 text-violet-600" />
+                                    </div>
+                                    <div className="text-left min-w-0">
+                                        <p className="font-semibold text-slate-900 text-sm sm:text-base">Standard</p>
+                                        <p className="text-xs text-slate-500 truncate">Everyday</p>
+                                    </div>
+                                </button>
+
+                                <button className="flex-1 p-3 sm:p-4 bg-slate-50 border border-slate-200 rounded-xl sm:rounded-2xl flex items-center gap-2 sm:gap-3 opacity-50">
+                                    <div className="w-10 h-10 sm:w-12 sm:h-12 bg-amber-100 rounded-lg sm:rounded-xl flex items-center justify-center flex-shrink-0">
+                                        <Zap className="w-5 h-5 sm:w-6 sm:h-6 text-amber-600" />
+                                    </div>
+                                    <div className="text-left min-w-0">
+                                        <p className="font-semibold text-slate-900 text-sm sm:text-base">Premium</p>
+                                        <p className="text-xs text-slate-500 truncate">Soon</p>
+                                    </div>
+                                </button>
+                            </div>
+
+                            {/* Payment Method */}
+                            <div className="flex items-center justify-between p-3 sm:p-4 bg-emerald-50 border border-emerald-200 rounded-xl sm:rounded-2xl">
+                                <div className="flex items-center gap-2 sm:gap-3">
+                                    <div className="w-8 h-8 sm:w-10 sm:h-10 bg-emerald-100 rounded-lg sm:rounded-xl flex items-center justify-center">
+                                        <Banknote className="w-4 h-4 sm:w-5 sm:h-5 text-emerald-600" />
+                                    </div>
+                                    <div>
+                                        <p className="font-medium text-slate-900 text-sm sm:text-base">Cash</p>
+                                        <p className="text-xs text-slate-500">Pay driver directly</p>
+                                    </div>
+                                </div>
+                                <div className="w-2.5 h-2.5 sm:w-3 sm:h-3 bg-emerald-500 rounded-full"></div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Book Button - ALWAYS VISIBLE */}
+                    <div className="px-4 sm:px-6 py-4 sm:py-5 bg-white">
+                        <Button
+                            size="lg"
+                            className="w-full py-4 sm:py-5 text-base sm:text-lg font-semibold shadow-lg"
+                            onClick={handleBookRide}
+                            loading={loading}
+                            disabled={!pickup || !destination}
+                        >
+                            <Car className="w-5 h-5 sm:w-6 sm:h-6 mr-2" />
+                            {fare ? `Request Ride · ${pricing.currencySymbol}${fare}` : 'Request Ride'}
+                        </Button>
+                    </div>
                 </div>
             </div>
         </div>

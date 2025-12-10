@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '@/lib/auth-context';
 import { Avatar, Spinner, Badge } from '@/components/ui';
+import { ThemeToggle } from '@/components/ui/ThemeToggle';
 import { useState, useEffect as useEff } from 'react';
 import { ref, onValue } from 'firebase/database';
 import { database } from '@/lib/firebase';
@@ -73,7 +74,7 @@ export default function DriverLayout({
 
     if (loading) {
         return (
-            <div className="min-h-screen bg-[#0a0a0f] flex items-center justify-center">
+            <div className="min-h-screen flex items-center justify-center" style={{ background: 'var(--background)' }}>
                 <Spinner size="lg" />
             </div>
         );
@@ -102,55 +103,56 @@ export default function DriverLayout({
     };
 
     return (
-        <div className="min-h-screen bg-[#0a0a0f]">
+        <div className="min-h-screen" style={{ background: 'var(--background)' }}>
             {/* Mobile sidebar backdrop */}
             {sidebarOpen && (
                 <div
-                    className="fixed inset-0 z-40 bg-black/50 lg:hidden"
+                    className="fixed inset-0 z-40 bg-black/30 lg:hidden"
                     onClick={() => setSidebarOpen(false)}
                 />
             )}
 
             {/* Sidebar */}
             <aside
-                className={`fixed top-0 left-0 z-50 h-screen w-72 bg-gray-900/95 backdrop-blur-xl border-r border-gray-800 transform transition-transform duration-300 lg:translate-x-0 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'
+                className={`fixed top-0 left-0 z-50 h-screen w-72 backdrop-blur-xl border-r transform transition-transform duration-300 lg:translate-x-0 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'
                     }`}
+                style={{ background: 'var(--card-bg)', borderColor: 'var(--card-border)' }}
             >
                 <div className="flex flex-col h-full">
                     {/* Logo */}
-                    <div className="flex items-center justify-between px-6 py-5 border-b border-gray-800">
+                    <div className="flex items-center justify-between px-6 py-5 border-b" style={{ borderColor: 'var(--card-border)' }}>
                         <Link href="/" className="flex items-center gap-2">
                             <div className="w-10 h-10 bg-gradient-to-br from-emerald-600 to-teal-600 rounded-xl flex items-center justify-center">
                                 <Car className="w-6 h-6 text-white" />
                             </div>
                             <div>
-                                <span className="text-xl font-bold text-white">RideFlow</span>
-                                <span className="text-xs text-emerald-400 block">Driver</span>
+                                <span className="text-xl font-bold" style={{ color: 'var(--foreground)' }}>YABONSE</span>
+                                <span className="text-xs text-emerald-600 block">Driver</span>
                             </div>
                         </Link>
                         <button
                             onClick={() => setSidebarOpen(false)}
-                            className="lg:hidden text-gray-400 hover:text-white"
+                            className="lg:hidden" style={{ color: 'var(--muted)' }}
                         >
                             <X className="w-6 h-6" />
                         </button>
                     </div>
 
                     {/* Driver Info */}
-                    <div className="px-6 py-4 border-b border-gray-800">
+                    <div className="px-6 py-4 border-b" style={{ borderColor: 'var(--card-border)' }}>
                         <div className="flex items-center gap-3">
                             <Avatar name={userData?.name || 'Driver'} size="md" />
                             <div className="flex-1 min-w-0">
-                                <p className="font-medium text-white truncate">{userData?.name}</p>
+                                <p className="font-medium truncate" style={{ color: 'var(--foreground)' }}>{userData?.name}</p>
                                 {getStatusBadge()}
                             </div>
                         </div>
                         {driverData?.vehicle && (
-                            <div className="mt-3 p-3 bg-gray-800/50 rounded-lg">
-                                <p className="text-sm text-white">
+                            <div className="mt-3 p-3 rounded-lg" style={{ background: 'var(--input-bg)' }}>
+                                <p className="text-sm" style={{ color: 'var(--foreground)' }}>
                                     {driverData.vehicle.make} {driverData.vehicle.model}
                                 </p>
-                                <p className="text-xs text-gray-400">{driverData.vehicle.licensePlate}</p>
+                                <p className="text-xs" style={{ color: 'var(--muted)' }}>{driverData.vehicle.licensePlate}</p>
                             </div>
                         )}
                     </div>
@@ -164,9 +166,10 @@ export default function DriverLayout({
                                     key={item.name}
                                     href={item.href}
                                     className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${isActive
-                                            ? 'bg-gradient-to-r from-emerald-600/20 to-teal-600/20 text-white border border-emerald-500/30'
-                                            : 'text-gray-400 hover:text-white hover:bg-gray-800'
+                                        ? 'bg-gradient-to-r from-emerald-100 to-teal-100 text-emerald-700 border border-emerald-200 dark:from-emerald-600/20 dark:to-teal-600/20 dark:text-white dark:border-emerald-500/30'
+                                        : 'hover:bg-slate-100 dark:hover:bg-slate-800'
                                         }`}
+                                    style={{ color: isActive ? undefined : 'var(--muted)' }}
                                     onClick={() => setSidebarOpen(false)}
                                 >
                                     <item.icon className="w-5 h-5" />
@@ -176,11 +179,15 @@ export default function DriverLayout({
                         })}
                     </nav>
 
-                    {/* Sign Out */}
-                    <div className="px-4 py-4 border-t border-gray-800">
+                    {/* Theme Toggle & Sign Out */}
+                    <div className="px-4 py-4 border-t space-y-2" style={{ borderColor: 'var(--card-border)' }}>
+                        <ThemeToggle
+                            showLabel
+                            className="w-full hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-400"
+                        />
                         <button
                             onClick={handleSignOut}
-                            className="flex items-center gap-3 w-full px-4 py-3 text-gray-400 hover:text-white hover:bg-gray-800 rounded-xl transition-all"
+                            className="flex items-center gap-3 w-full px-4 py-3 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl transition-all"
                         >
                             <LogOut className="w-5 h-5" />
                             Sign Out
