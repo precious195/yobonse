@@ -57,6 +57,7 @@ export default function AvailableRidesPage() {
     const [accepting, setAccepting] = useState(false);
     const [currentLocation, setCurrentLocation] = useState<{ lat: number; lng: number } | null>(null);
     const [map, setMap] = useState<google.maps.Map | null>(null);
+    const [counterPrice, setCounterPrice] = useState<number | null>(null);
 
     const { isLoaded } = useJsApiLoader({
         googleMapsApiKey: GOOGLE_MAPS_API_KEY,
@@ -124,6 +125,7 @@ export default function AvailableRidesPage() {
 
     const handleRideClick = (ride: Ride) => {
         setSelectedRide(ride);
+        setCounterPrice(null);
         setShowDetailsModal(true);
     };
 
@@ -132,11 +134,17 @@ export default function AvailableRidesPage() {
 
         setAccepting(true);
         try {
-            // Update ride with driver info
+            // Determine final accepted price
+            const finalPrice = counterPrice || selectedRide.offeredPrice || selectedRide.fare;
+
+            // Update ride with driver info and accepted price
             await update(ref(database, `rides/${selectedRide.id}`), {
                 driverId: user.uid,
                 driverName: userData.name,
                 status: 'ACCEPTED',
+                acceptedPrice: finalPrice,
+                priceStatus: 'ACCEPTED',
+                counterPrice: counterPrice || null,
                 'timestamps/acceptedAt': Date.now(),
             });
 
@@ -391,7 +399,15 @@ export default function AvailableRidesPage() {
                     <div className="space-y-6">
                         {/* Fare */}
                         <div className="text-center py-4 bg-emerald-50 dark:bg-emerald-900/20 rounded-xl">
-                            <p className="text-4xl font-bold text-emerald-600">K{selectedRide.fare}</p>
+                            {selectedRide.offeredPrice ? (
+                                <>
+                                    <p className="text-xs text-violet-600 mb-1">Customer Offer</p>
+                                    <p className="text-4xl font-bold text-violet-600">K{selectedRide.offeredPrice}</p>
+                                    <p className="text-sm text-slate-500 mt-1 line-through">Est. K{selectedRide.fare}</p>
+                                </>
+                            ) : (
+                                <p className="text-4xl font-bold text-emerald-600">K{selectedRide.fare}</p>
+                            )}
                             <div className="flex items-center justify-center gap-4 mt-2 text-sm text-slate-600 dark:text-slate-400">
                                 <span className="flex items-center gap-1">
                                     <MapPin className="w-4 h-4" /> {selectedRide.distance} km
@@ -439,6 +455,26 @@ export default function AvailableRidesPage() {
                             </div>
                         </div>
 
+                        {/* Counter Offer (if customer offered a price) */}
+                        {selectedRide.offeredPrice && (
+                            <div className="p-4 bg-violet-50 dark:bg-violet-900/20 rounded-xl space-y-3">
+                                <p className="text-sm font-medium text-violet-700 dark:text-violet-300">
+                                    Counter offer (optional)
+                                </p>
+                                <div className="flex items-center gap-3">
+                                    <span className="text-lg font-bold text-violet-600">K</span>
+                                    <input
+                                        type="number"
+                                        value={counterPrice || ''}
+                                        onChange={(e) => setCounterPrice(Number(e.target.value) || null)}
+                                        className="flex-1 px-3 py-2 bg-white dark:bg-slate-800 border border-violet-300 dark:border-violet-600 rounded-lg text-lg font-semibold text-center focus:outline-none focus:ring-2 focus:ring-violet-500"
+                                        placeholder={String(selectedRide.fare || '')}
+                                        min={1}
+                                    />
+                                </div>
+                            </div>
+                        )}
+
                         {/* Action Buttons */}
                         <div className="grid grid-cols-2 gap-4">
                             <Button
@@ -454,7 +490,9 @@ export default function AvailableRidesPage() {
                                 className="bg-gradient-to-r from-emerald-600 to-teal-600"
                             >
                                 <CheckCircle className="w-5 h-5 mr-2" />
-                                Accept Ride
+                                {counterPrice ? `Accept K${counterPrice}` :
+                                    selectedRide.offeredPrice ? `Accept K${selectedRide.offeredPrice}` :
+                                        'Accept Ride'}
                             </Button>
                         </div>
                     </div>

@@ -7,6 +7,8 @@ import { Car, Mail, Lock, Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '@/lib/auth-context';
 import { Button, Input, Card } from '@/components/ui';
 import toast from 'react-hot-toast';
+import { ref, get } from 'firebase/database';
+import { database, auth } from '@/lib/firebase';
 
 export default function LoginPage() {
     const router = useRouter();
@@ -22,7 +24,26 @@ export default function LoginPage() {
 
         try {
             await signIn(email, password);
-            toast.success('Welcome back!');
+
+            // Fetch user role to determine redirect
+            if (auth.currentUser) {
+                const snapshot = await get(ref(database, `users/${auth.currentUser.uid}`));
+                if (snapshot.exists()) {
+                    const data = snapshot.val();
+                    toast.success('Welcome back!');
+
+                    if (data.role === 'DRIVER') {
+                        router.push('/driver/dashboard');
+                    } else if (data.role === 'ADMIN') {
+                        router.push('/admin/dashboard');
+                    } else {
+                        router.push('/customer/dashboard');
+                    }
+                    return;
+                }
+            }
+
+            // Fallback
             router.push('/customer/dashboard');
         } catch (err) {
             // Error is already handled in auth context

@@ -16,7 +16,7 @@ import {
 import { useAuth } from '@/lib/auth-context';
 import { Card, Button, Badge, Modal, Avatar } from '@/components/ui';
 import { RideMap } from '@/components/maps/GoogleMap';
-import PaymentModal from '@/components/payment/PaymentModal';
+import { ChatBox } from '@/components/chat/ChatBox';
 import { ref, onValue, update, set, push } from 'firebase/database';
 import { database } from '@/lib/firebase';
 import { Ride, DriverLocation } from '@/types';
@@ -37,6 +37,7 @@ export default function RideTrackingPage() {
   const [rating, setRating] = useState(5);
   const [comment, setComment] = useState('');
   const [cancelling, setCancelling] = useState(false);
+  const [showChat, setShowChat] = useState(false);
 
   useEffect(() => {
     if (!rideId) return;
@@ -252,7 +253,7 @@ export default function RideTrackingPage() {
                   <Button variant="outline" size="sm">
                     <Phone className="w-4 h-4" />
                   </Button>
-                  <Button variant="outline" size="sm">
+                  <Button variant="outline" size="sm" onClick={() => setShowChat(true)}>
                     <MessageSquare className="w-4 h-4" />
                   </Button>
                 </div>
@@ -400,6 +401,18 @@ export default function RideTrackingPage() {
           </Button>
         </div>
       </Modal>
+
+      {/* Chat with Driver */}
+      {ride.driverId && user && (
+        <ChatBox
+          rideId={rideId}
+          userId={user.uid}
+          userName={ride.riderName || 'Customer'}
+          userRole="CUSTOMER"
+          isOpen={showChat}
+          onClose={() => setShowChat(false)}
+        />
+      )}
     </div>
   );
 }

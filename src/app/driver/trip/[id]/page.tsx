@@ -16,6 +16,7 @@ import {
 import { useAuth } from '@/lib/auth-context';
 import { Card, Button, Badge, Modal } from '@/components/ui';
 import { RideMap } from '@/components/maps/GoogleMap';
+import { ChatBox } from '@/components/chat/ChatBox';
 import { ref, onValue, update } from 'firebase/database';
 import { database } from '@/lib/firebase';
 import { Ride } from '@/types';
@@ -32,6 +33,7 @@ export default function DriverTripDetailPage() {
     const [showCancelModal, setShowCancelModal] = useState(false);
     const [actionLoading, setActionLoading] = useState(false);
     const [currentLocation, setCurrentLocation] = useState<{ lat: number; lng: number } | null>(null);
+    const [showChat, setShowChat] = useState(false);
 
     // Listen to specific ride by ID
     useEffect(() => {
@@ -265,7 +267,7 @@ export default function DriverTripDetailPage() {
                                         <Phone className="w-4 h-4" />
                                     </Button>
                                 </a>
-                                <Button variant="outline" size="sm">
+                                <Button variant="outline" size="sm" onClick={() => setShowChat(true)}>
                                     <MessageSquare className="w-4 h-4" />
                                 </Button>
                             </div>
@@ -356,6 +358,18 @@ export default function DriverTripDetailPage() {
                     </div>
                 </div>
             </Modal>
+
+            {/* Chat with Passenger */}
+            {user && (
+                <ChatBox
+                    rideId={rideId}
+                    userId={user.uid}
+                    userName={ride.driverName || 'Driver'}
+                    userRole="DRIVER"
+                    isOpen={showChat}
+                    onClose={() => setShowChat(false)}
+                />
+            )}
         </div>
     );
 }

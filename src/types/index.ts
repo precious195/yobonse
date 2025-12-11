@@ -94,6 +94,11 @@ export interface Ride {
     distance: number | null; // in km
     duration: number | null; // in minutes
     fare: number | null;
+    // Price negotiation
+    offeredPrice: number | null;      // Customer's offered price
+    acceptedPrice: number | null;     // Final agreed price
+    priceStatus: 'PENDING' | 'ACCEPTED' | 'COUNTERED' | null;
+    counterPrice: number | null;      // Driver's counter offer
     timestamps: RideTimestamps;
     cancelReason: string | null;
     paymentStatus?: 'PENDING' | 'COMPLETED' | 'FAILED';
@@ -148,6 +153,18 @@ export interface Rating {
     score: number; // 1-5
     comment: string | null;
     createdAt: number;
+}
+
+// Chat Types
+export interface ChatMessage {
+    id: string;
+    rideId: string;
+    senderId: string;
+    senderName: string;
+    senderRole: 'CUSTOMER' | 'DRIVER';
+    message: string;
+    timestamp: number;
+    read: boolean;
 }
 
 // Earnings Types

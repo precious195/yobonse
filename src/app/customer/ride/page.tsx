@@ -59,6 +59,8 @@ export default function RideBookingPage() {
     const [panelExpanded, setPanelExpanded] = useState(false);
     const [pricing, setPricing] = useState<PricingSettings>(DEFAULT_PRICING);
     const [nearbyDrivers, setNearbyDrivers] = useState<{ id: string; lat: number; lng: number; heading?: number }[]>([]);
+    const [useCustomPrice, setUseCustomPrice] = useState(false);
+    const [offeredPrice, setOfferedPrice] = useState<number | null>(null);
 
     // Fetch pricing from Firebase
     useEffect(() => {
@@ -191,6 +193,8 @@ export default function RideBookingPage() {
                 },
                 status: 'REQUESTED',
                 fare,
+                offeredPrice: useCustomPrice ? offeredPrice : null,
+                priceStatus: useCustomPrice ? 'PENDING' : null,
                 distance,
                 duration,
                 paymentMethod: 'CASH',
@@ -433,6 +437,46 @@ export default function RideBookingPage() {
                                 </div>
                                 <div className="w-2.5 h-2.5 sm:w-3 sm:h-3 bg-emerald-500 rounded-full"></div>
                             </div>
+
+                            {/* Offer Your Price */}
+                            <div className="p-3 sm:p-4 bg-violet-50 border border-violet-200 rounded-xl sm:rounded-2xl space-y-3">
+                                <div className="flex items-center justify-between">
+                                    <div className="flex items-center gap-2 sm:gap-3">
+                                        <div className="w-8 h-8 sm:w-10 sm:h-10 bg-violet-100 rounded-lg sm:rounded-xl flex items-center justify-center">
+                                            <DollarSign className="w-4 h-4 sm:w-5 sm:h-5 text-violet-600" />
+                                        </div>
+                                        <div>
+                                            <p className="font-medium text-slate-900 text-sm sm:text-base">Offer Your Price</p>
+                                            <p className="text-xs text-slate-500">Negotiate with drivers</p>
+                                        </div>
+                                    </div>
+                                    <button
+                                        onClick={() => {
+                                            setUseCustomPrice(!useCustomPrice);
+                                            if (!useCustomPrice && fare) setOfferedPrice(fare);
+                                        }}
+                                        className={`w-12 h-6 rounded-full transition-colors ${useCustomPrice ? 'bg-violet-500' : 'bg-slate-300'}`}
+                                    >
+                                        <div className={`w-5 h-5 bg-white rounded-full shadow transition-transform ${useCustomPrice ? 'translate-x-6' : 'translate-x-0.5'}`} />
+                                    </button>
+                                </div>
+                                {useCustomPrice && (
+                                    <div className="flex items-center gap-3">
+                                        <span className="text-lg font-bold text-violet-600">{pricing.currencySymbol}</span>
+                                        <input
+                                            type="number"
+                                            value={offeredPrice || ''}
+                                            onChange={(e) => setOfferedPrice(Number(e.target.value) || null)}
+                                            className="flex-1 px-3 py-2 bg-white border border-violet-300 rounded-lg text-lg font-semibold text-center focus:outline-none focus:ring-2 focus:ring-violet-500"
+                                            placeholder={String(fare || '')}
+                                            min={1}
+                                        />
+                                        {fare && offeredPrice && offeredPrice < fare && (
+                                            <span className="text-xs text-amber-600">Below estimate</span>
+                                        )}
+                                    </div>
+                                )}
+                            </div>
                         </div>
                     )}
 
@@ -446,7 +490,9 @@ export default function RideBookingPage() {
                             disabled={!pickup || !destination}
                         >
                             <Car className="w-5 h-5 sm:w-6 sm:h-6 mr-2" />
-                            {fare ? `Request Ride · ${pricing.currencySymbol}${fare}` : 'Request Ride'}
+                            {useCustomPrice && offeredPrice
+                                ? `Offer Ride · ${pricing.currencySymbol}${offeredPrice}`
+                                : fare ? `Request Ride · ${pricing.currencySymbol}${fare}` : 'Request Ride'}
                         </Button>
                     </div>
                 </div>
