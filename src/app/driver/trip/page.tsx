@@ -210,7 +210,7 @@ export default function DriverTripPage() {
                     <RideMap
                         pickup={{ lat: ride.pickup.lat, lng: ride.pickup.lng, address: ride.pickup.address }}
                         destination={{ lat: ride.destination.lat, lng: ride.destination.lng, address: ride.destination.address }}
-                        driverLocation={currentLocation}
+                        driverLocation={currentLocation ? { ...currentLocation, address: 'Driver Location' } : null}
                         showRoute={true}
                         className="h-[500px]"
                     />

@@ -210,7 +210,7 @@ export async function rejectRide(rideId: string, driverId: string): Promise<void
 
             // Update matched drivers
             const updatedDrivers = matchedDrivers.map(
-                (d: { id: string; notified: boolean }) => ({
+                (d: { id: string; notified: boolean; rejected?: boolean }) => ({
                     ...d,
                     notified: d.id === nextDriver.id ? true : d.notified,
                     rejected: d.id === driverId ? true : d.rejected,
