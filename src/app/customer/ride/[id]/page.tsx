@@ -185,7 +185,7 @@ export default function RideTrackingPage() {
           <RideMap
             pickup={{ lat: ride.pickup.lat, lng: ride.pickup.lng, address: ride.pickup.address }}
             destination={{ lat: ride.destination.lat, lng: ride.destination.lng, address: ride.destination.address }}
-            driverLocation={driverLocation ? { lat: driverLocation.lat, lng: driverLocation.lng } : null}
+            driverLocation={driverLocation ? { lat: driverLocation.lat, lng: driverLocation.lng, address: 'Driver Location' } : null}
             showRoute={true}
             className="h-[500px]"
           />
@@ -351,14 +351,6 @@ export default function RideTrackingPage() {
           </div>
         </div>
       </Modal>
-
-      {/* Payment Modal */}
-      <PaymentModal
-        isOpen={showPaymentModal}
-        onClose={() => setShowPaymentModal(false)}
-        amount={ride.fare || 0}
-        onSuccess={handlePaymentSuccess}
-      />
 
       {/* Rating Modal */}
       <Modal

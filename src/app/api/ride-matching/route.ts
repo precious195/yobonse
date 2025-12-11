@@ -143,8 +143,8 @@ export async function POST(request: NextRequest) {
             }
 
             matchedDrivers.push({
-                id: driverId,
                 ...driver,
+                id: driverId,
                 distance: Math.round(distance * 10) / 10, // Round to 1 decimal
                 eta: calculateETA(distance),
                 location,

@@ -22,13 +22,7 @@ import { RideMap, PlacesAutocomplete } from '@/components/maps/GoogleMap';
 import { ref, push, set, get, onValue } from 'firebase/database';
 import { database } from '@/lib/firebase';
 import toast from 'react-hot-toast';
-import { PricingSettings } from '@/types';
-
-interface Location {
-    lat: number;
-    lng: number;
-    address?: string;
-}
+import { PricingSettings, Location } from '@/types';
 
 // Default pricing (will be overridden by Firebase)
 const DEFAULT_PRICING: PricingSettings = {

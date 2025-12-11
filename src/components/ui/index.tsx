@@ -92,13 +92,12 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
 Input.displayName = 'Input';
 
 // Card Component
-interface CardProps {
-    children: React.ReactNode;
-    className?: string;
+// Card Component
+interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
     hover?: boolean;
 }
 
-export function Card({ children, className = '', hover = false }: CardProps) {
+export function Card({ children, className = '', hover = false, ...props }: CardProps) {
     return (
         <div
             className={`
@@ -106,6 +105,7 @@ export function Card({ children, className = '', hover = false }: CardProps) {
         ${hover ? 'hover:border-violet-300 dark:hover:border-violet-600 hover:shadow-md transition-all duration-300' : ''}
         ${className}
       `}
+            {...props}
         >
             {children}
         </div>

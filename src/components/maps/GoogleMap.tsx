@@ -95,11 +95,7 @@ const mapStyles: google.maps.MapTypeStyle[] = [
     },
 ];
 
-interface Location {
-    lat: number;
-    lng: number;
-    address?: string;
-}
+import { Location } from '@/types';
 
 interface NearbyDriver {
     id: string;
@@ -115,6 +111,7 @@ interface RideMapProps {
     nearbyDrivers?: NearbyDriver[];
     onPickupSelect?: (location: Location) => void;
     onDestinationSelect?: (location: Location) => void;
+    onRouteCalculated?: (distance: number, duration: number) => void;
     showRoute?: boolean;
     selectMode?: 'pickup' | 'destination' | null;
     className?: string;
@@ -127,6 +124,7 @@ export function RideMap({
     nearbyDrivers = [],
     onPickupSelect,
     onDestinationSelect,
+    onRouteCalculated,
     showRoute = false,
     selectMode = null,
     className = '',
@@ -148,6 +146,7 @@ export function RideMap({
                     setCurrentLocation({
                         lat: position.coords.latitude,
                         lng: position.coords.longitude,
+                        address: 'Current Location',
                     });
                 },
                 (error) => {
@@ -171,6 +170,14 @@ export function RideMap({
             (result, status) => {
                 if (status === 'OK' && result) {
                     setDirections(result);
+                    if (onRouteCalculated && result.routes[0]?.legs[0]) {
+                        const leg = result.routes[0].legs[0];
+                        if (leg.distance && leg.duration) {
+                            const distValue = leg.distance.value / 1000; // km
+                            const durValue = Math.ceil(leg.duration.value / 60); // min
+                            onRouteCalculated(distValue, durValue);
+                        }
+                    }
                 }
             }
         );
